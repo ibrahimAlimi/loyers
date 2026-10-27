@@ -1,0 +1,22 @@
+:root {
+  --statut-ok: #0ca30c;
+  --statut-retard: #ec835a;
+  --statut-critique: #d03b3b;
+}
+
+html,
+body {
+  background: var(--mantine-color-gray-0);
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 48em) {
+  html {
+    font-size: 17px;
+  }
+}
+
+.montant {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
