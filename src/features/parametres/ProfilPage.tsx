@@ -57,6 +57,16 @@ export function ProfilPage() {
     onSuccess: () => notifierSucces('Signature enregistrée'),
     onError: notifierErreur,
   });
+  const retirerSignature = useMutation({
+    mutationFn: async () => {
+      await supabase.storage.from('profils').remove([`${profil!.id}/signature.png`]);
+      const { error } = await supabase.from('profils').update({ signature_path: null }).eq('id', profil!.id);
+      if (error) throw error;
+      await rechargerProfil();
+    },
+    onSuccess: () => notifierSucces('Signature retirée : les reçus auront une case à signer à la main'),
+    onError: notifierErreur,
+  });
 
   return (
     <>
@@ -93,6 +103,11 @@ export function ProfilPage() {
             <Group mt="sm" gap="xs">
               <Text size="sm">ou</Text>
               <ImageUpload libelle="Envoyer une photo de ma signature" retirerFondBlanc onValider={(b) => envoyerSignature.mutate(b)} />
+              {profil?.signature_path && (
+                <Button variant="subtle" color="red" loading={retirerSignature.isPending} onClick={() => retirerSignature.mutate()}>
+                  Retirer (je signe à la main)
+                </Button>
+              )}
             </Group>
           </Card>
         )}

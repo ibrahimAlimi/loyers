@@ -19,6 +19,7 @@ import { ImageUpload } from '@/ui/ImageUpload';
 import { SignaturePad } from '@/ui/SignaturePad';
 import type { Recu } from '@/lib/types';
 import { genererCachet } from './cachet';
+import { ReafficherRappel } from './ReafficherRappel';
 
 type Champ = 'logo_path' | 'cachet_path' | 'signature_path';
 const FICHIER: Record<Champ, string> = { logo_path: 'logo.png', cachet_path: 'cachet.png', signature_path: 'signature.png' };
@@ -117,6 +118,7 @@ export function ParametresEspacePage() {
               </Stack>
             </form>
           </Card>
+          <ReafficherRappel espaceId={espace.id} />
         </Tabs.Panel>
 
         <Tabs.Panel value="identite">
@@ -160,6 +162,11 @@ export function ParametresEspacePage() {
                   <Text size="sm">ou</Text>
                   <ImageUpload libelle="Envoyer une photo de la signature" retirerFondBlanc
                     onValider={(blob) => fichier.mutate({ champ: 'signature_path', blob })} />
+                  {espace.signature_path && (
+                    <Button variant="subtle" color="red" onClick={() => fichier.mutate({ champ: 'signature_path', blob: null })}>
+                      Retirer (je signe à la main)
+                    </Button>
+                  )}
                 </Group>
               </Stack>
             </Card>
