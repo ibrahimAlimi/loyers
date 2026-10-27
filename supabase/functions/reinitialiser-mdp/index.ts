@@ -36,5 +36,10 @@ Deno.serve(async (req) => {
   const { error } = await admin.auth.admin.updateUserById(user_id, { password: nouveau_mot_de_passe });
   if (error) return erreur(error.message, 500);
   await admin.from('profils').update({ doit_changer_mdp: true }).eq('id', user_id);
+  // Téléphone perdu : la réinitialisation retire aussi la double authentification (à réactiver ensuite)
+  const { data: facteurs } = await admin.auth.admin.mfa.listFactors({ userId: user_id });
+  for (const f of facteurs?.factors ?? []) {
+    await admin.auth.admin.mfa.deleteFactor({ userId: user_id, id: f.id });
+  }
   return json({ ok: true });
 });

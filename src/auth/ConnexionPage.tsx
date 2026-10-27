@@ -1,9 +1,12 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Alert, Box, Button, Center, Paper, PasswordInput, Stack, Text, TextInput, ThemeIcon, Title } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { IconHome } from '@tabler/icons-react';
+import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile';
 import { Navigate, useLocation, useNavigate } from 'react-router';
 import { useAuth } from './AuthProvider';
+
+const CLE_TURNSTILE = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined;
 
 export function ConnexionPage() {
   const { session, seConnecter } = useAuth();
@@ -11,6 +14,8 @@ export function ConnexionPage() {
   const lieu = useLocation();
   const [erreur, setErreur] = useState<string | null>(null);
   const [envoi, setEnvoi] = useState(false);
+  const [captcha, setCaptcha] = useState<string | null>(null);
+  const turnstile = useRef<TurnstileInstance>(null);
   const form = useForm({
     initialValues: { identifiant: '', motDePasse: '' },
     validate: {
@@ -25,10 +30,13 @@ export function ConnexionPage() {
     setErreur(null);
     setEnvoi(true);
     try {
-      await seConnecter(identifiant, motDePasse);
+      await seConnecter(identifiant, motDePasse, captcha ?? undefined);
       navigate((lieu.state as { depuis?: string })?.depuis ?? '/', { replace: true });
     } catch (e) {
       setErreur((e as Error).message);
+      // Un jeton CAPTCHA ne sert qu'une fois
+      setCaptcha(null);
+      turnstile.current?.reset();
     } finally {
       setEnvoi(false);
     }
@@ -61,7 +69,19 @@ export function ConnexionPage() {
                 size="md"
                 {...form.getInputProps('motDePasse')}
               />
-              <Button type="submit" size="md" loading={envoi} fullWidth>
+              {CLE_TURNSTILE && (
+                <Center>
+                  <Turnstile
+                    ref={turnstile}
+                    siteKey={CLE_TURNSTILE}
+                    options={{ language: 'fr', theme: 'light', size: 'flexible' }}
+                    onSuccess={setCaptcha}
+                    onExpire={() => setCaptcha(null)}
+                    onError={() => setCaptcha(null)}
+                  />
+                </Center>
+              )}
+              <Button type="submit" size="md" loading={envoi} fullWidth disabled={!!CLE_TURNSTILE && !captcha}>
                 Se connecter
               </Button>
             </Stack>

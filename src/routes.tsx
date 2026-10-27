@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router';
 import { RequireAuth } from './auth/RequireAuth';
 import { ConnexionPage } from './auth/ConnexionPage';
 import { ChangerMotDePassePage } from './auth/ChangerMotDePassePage';
+import { ActivationDoubleAuthPage, SaisieCodePage } from './auth/DoubleAuthPage';
 import { AppShell } from './layout/AppShell';
 import { AccueilPage } from './features/accueil/AccueilPage';
 import { LocatairesPage } from './features/locataires/LocatairesPage';
@@ -26,6 +27,8 @@ export const router = createBrowserRouter([
     element: <RequireAuth />,
     children: [
       { path: '/changer-mot-de-passe', element: <ChangerMotDePassePage /> },
+      { path: '/double-authentification', element: <SaisieCodePage /> },
+      { path: '/double-authentification/activer', element: <ActivationDoubleAuthPage /> },
       {
         element: <AppShell />,
         children: [

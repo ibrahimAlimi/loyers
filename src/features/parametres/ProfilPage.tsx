@@ -10,6 +10,7 @@ import { useEspace } from '@/espace/EspaceProvider';
 import { PageEntete } from '@/layout/PageEntete';
 import { ImageUpload } from '@/ui/ImageUpload';
 import { SignaturePad } from '@/ui/SignaturePad';
+import { DoubleAuthCarte } from './DoubleAuthCarte';
 
 export function ProfilPage() {
   const { profil, rechargerProfil } = useAuth();
@@ -82,6 +83,7 @@ export function ProfilPage() {
             </Stack>
           </form>
         </Card>
+        <DoubleAuthCarte />
         {role === 'gestionnaire' && (
           <Card withBorder radius="lg" padding="lg">
             <Title order={3} size="h4" mb={4}>Ma signature</Title>

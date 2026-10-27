@@ -4,13 +4,23 @@ import { emailDeConnexion, supabase } from '@/lib/supabase';
 import { queryClient } from '@/lib/queryClient';
 import type { Profil } from '@/lib/types';
 
+export interface NiveauAuth {
+  /** Niveau de la session : aal1 (mot de passe) ou aal2 (code vérifié). */
+  actuel: 'aal1' | 'aal2' | null;
+  /** aal2 si l'utilisateur a activé la double authentification. */
+  requis: 'aal1' | 'aal2' | null;
+}
+
 interface AuthContexte {
   session: Session | null;
   profil: Profil | null;
+  niveau: NiveauAuth;
   chargement: boolean;
-  seConnecter: (identifiantOuEmail: string, motDePasse: string) => Promise<void>;
+  seConnecter: (identifiantOuEmail: string, motDePasse: string, captchaToken?: string) => Promise<void>;
   seDeconnecter: () => Promise<void>;
   rechargerProfil: () => Promise<void>;
+  /** Relit le niveau d'authentification (après saisie ou activation du code). */
+  rechargerNiveau: () => Promise<void>;
 }
 
 const Ctx = createContext<AuthContexte | null>(null);
@@ -18,16 +28,24 @@ const Ctx = createContext<AuthContexte | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profil, setProfil] = useState<Profil | null>(null);
+  const [niveau, setNiveau] = useState<NiveauAuth>({ actuel: null, requis: null });
   const [chargement, setChargement] = useState(true);
+
+  const chargerNiveau = useCallback(async () => {
+    const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    setNiveau({ actuel: (data?.currentLevel as NiveauAuth['actuel']) ?? null, requis: (data?.nextLevel as NiveauAuth['requis']) ?? null });
+  }, []);
 
   const chargerProfil = useCallback(async (s: Session | null) => {
     if (!s) {
       setProfil(null);
+      setNiveau({ actuel: null, requis: null });
       return;
     }
+    await chargerNiveau();
     const { data } = await supabase.from('profils').select('*').eq('id', s.user.id).single();
     setProfil((data as Profil) ?? null);
-  }, []);
+  }, [chargerNiveau]);
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data }) => {
@@ -37,14 +55,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     const { data: abo } = supabase.auth.onAuthStateChange((evenement, s) => {
       setSession(s);
-      if (evenement === 'SIGNED_IN' || evenement === 'SIGNED_OUT' || evenement === 'USER_UPDATED') {
+      if (['SIGNED_IN', 'SIGNED_OUT', 'USER_UPDATED', 'MFA_CHALLENGE_VERIFIED'].includes(evenement)) {
         void chargerProfil(s);
       }
     });
     return () => abo.subscription.unsubscribe();
   }, [chargerProfil]);
 
-  const seConnecter = async (saisie: string, motDePasse: string) => {
+  const seConnecter = async (saisie: string, motDePasse: string, captchaToken?: string) => {
     let identifiant = saisie.trim().toLowerCase();
     if (identifiant.includes('@')) {
       const { data } = await supabase.rpc('identifiant_pour_email', { p_email: identifiant });
@@ -54,11 +72,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data, error } = await supabase.auth.signInWithPassword({
       email: emailDeConnexion(identifiant),
       password: motDePasse,
+      options: captchaToken ? { captchaToken } : undefined,
     });
     if (error) {
-      throw new Error(/fetch/i.test(error.message)
-        ? 'Pas de connexion Internet. Vérifiez vos données mobiles et réessayez.'
-        : 'Identifiant ou mot de passe incorrect');
+      if (/fetch/i.test(error.message)) throw new Error('Pas de connexion Internet. Vérifiez vos données mobiles et réessayez.');
+      if (/captcha/i.test(error.message)) throw new Error('La vérification anti-robot a échoué. Réessayez.');
+      if (/rate limit|too many/i.test(error.message)) throw new Error('Trop de tentatives. Patientez quelques minutes avant de réessayer.');
+      throw new Error('Identifiant ou mot de passe incorrect');
     }
     await chargerProfil(data.session);
   };
@@ -70,7 +90,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <Ctx.Provider
-      value={{ session, profil, chargement, seConnecter, seDeconnecter, rechargerProfil: () => chargerProfil(session) }}
+      value={{
+        session, profil, niveau, chargement, seConnecter, seDeconnecter,
+        rechargerProfil: () => chargerProfil(session),
+        rechargerNiveau: async () => {
+          await supabase.auth.refreshSession();
+          await chargerProfil((await supabase.auth.getSession()).data.session);
+          await queryClient.invalidateQueries();
+        },
+      }}
     >
       {children}
     </Ctx.Provider>
