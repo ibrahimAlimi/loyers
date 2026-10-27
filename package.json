@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "types:db": "supabase gen types typescript --linked > src/lib/database.types.ts",
+    "types:db": "supabase gen types typescript --linked > src/lib/database.generated.ts",
     "db:push": "supabase db push",
     "functions:deploy": "supabase functions deploy creer-utilisateur reinitialiser-mdp",
     "super-admin": "tsx --env-file=.env.local scripts/creer-super-admin.ts"
@@ -39,6 +39,7 @@
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "@vite-pwa/assets-generator": "^1.0.4",
     "@vitejs/plugin-react": "^4.7.0",
     "postcss": "^8.5.32",
     "postcss-preset-mantine": "^1.18.0",

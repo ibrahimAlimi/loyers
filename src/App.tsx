@@ -19,7 +19,7 @@ function AppTheme() {
   const theme = useMemo(() => genererThemeEspace(espace?.couleur_primaire), [espace?.couleur_primaire]);
   return (
     <MantineProvider theme={theme} defaultColorScheme="light" forceColorScheme="light">
-      <DatesProvider settings={{ locale: 'fr', firstDayOfWeek: 1, timezone: 'Africa/Porto-Novo' }}>
+      <DatesProvider settings={{ locale: 'fr', firstDayOfWeek: 1 }}>
         <ModalsProvider labels={{ confirm: 'Confirmer', cancel: 'Annuler' }}>
           <Notifications position="top-center" />
           <BanniereHorsLigne />

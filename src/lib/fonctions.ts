@@ -1,8 +1,8 @@
 import { supabase } from './supabase';
 
 /** Appelle une Edge Function et renvoie un message d'erreur lisible. */
-export async function appelerFonction<T>(nom: string, corps: unknown): Promise<T> {
-  const { data, error } = await supabase.functions.invoke(nom, { body: corps });
+export async function appelerFonction<T>(nom: string, corps: object): Promise<T> {
+  const { data, error } = await supabase.functions.invoke(nom, { body: corps as Record<string, unknown> });
   if (error) {
     let message = "L'opération a échoué. Réessayez.";
     try {

@@ -1,0 +1,25 @@
+# Empêche la mise en pause des projets Supabase gratuits (pause après 7 jours sans activité).
+name: Maintien en éveil Supabase
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        env: [prod, dev]
+    steps:
+      - name: Requête légère sur la base
+        env:
+          URL: ${{ matrix.env == 'prod' && secrets.SUPABASE_URL_PROD || secrets.SUPABASE_URL_DEV }}
+          CLE: ${{ matrix.env == 'prod' && secrets.SUPABASE_ANON_KEY_PROD || secrets.SUPABASE_ANON_KEY_DEV }}
+        run: |
+          if [ -z "$URL" ]; then echo "Secret manquant pour ${{ matrix.env }}, ignoré"; exit 0; fi
+          curl -sf "$URL/rest/v1/rpc/verifier_recu" \
+            -H "apikey: $CLE" -H "Authorization: Bearer $CLE" -H "Content-Type: application/json" \
+            -d '{"p_code":"maintien-eveil"}' > /dev/null
+          echo "OK ${{ matrix.env }}"
