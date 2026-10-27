@@ -13,6 +13,7 @@ import { useEspace } from '@/espace/EspaceProvider';
 import { peut } from '@/espace/droits';
 import { iconeMenu } from '@/espace/icones';
 import { useEncaisser } from '@/features/encaissement/EncaissementContext';
+import { Cloche } from '@/features/notifications/Cloche';
 import { useUrlFichier } from '@/lib/fichiers';
 import { LIBELLE_ROLE } from '@/lib/format';
 import { supabase } from '@/lib/supabase';
@@ -113,11 +114,14 @@ export function AppShell() {
                 ) : (
                   <ThemeIcon size={36} radius="md"><IconHome size={22} /></ThemeIcon>
                 )}
-                <Text fw={800} size="lg" truncate maw={mobile ? 180 : 320}>{espace?.nom ?? 'Mes Loyers'}</Text>
+                <Text fw={800} size="lg" truncate maw={mobile ? 150 : 320}>{espace?.nom ?? 'Mes Loyers'}</Text>
               </Group>
             </UnstyledButton>
           </Group>
-          {(profil?.est_super_admin || espaces.length > 1) && !mobile && <SelecteurEspace />}
+          <Group gap="xs" wrap="nowrap">
+            {(profil?.est_super_admin || espaces.length > 1) && !mobile && <SelecteurEspace />}
+            <Cloche />
+          </Group>
         </Group>
       </Shell.Header>
 

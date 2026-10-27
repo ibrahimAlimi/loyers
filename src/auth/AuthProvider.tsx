@@ -84,6 +84,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const seDeconnecter = async () => {
+    // Un appareil déconnecté (souvent partagé) ne reçoit plus les notifications de ce compte.
+    await import('@/features/notifications/push').then((m) => m.desactiverPush()).catch(() => undefined);
     await supabase.auth.signOut();
     queryClient.clear();
   };

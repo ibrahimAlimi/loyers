@@ -1,6 +1,8 @@
 import { Button, Card, Group, Image, PasswordInput, SimpleGrid, Stack, Text, TextInput, Title } from '@mantine/core';
 import { useForm } from '@mantine/form';
+import { useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
+import { useLocation } from 'react-router';
 import { supabase } from '@/lib/supabase';
 import { envoyerFichier, useUrlFichier } from '@/lib/fichiers';
 import { notifierErreur, notifierSucces } from '@/lib/erreurs';
@@ -11,11 +13,16 @@ import { PageEntete } from '@/layout/PageEntete';
 import { ImageUpload } from '@/ui/ImageUpload';
 import { SignaturePad } from '@/ui/SignaturePad';
 import { DoubleAuthCarte } from './DoubleAuthCarte';
+import { PreferencesNotifications } from '@/features/notifications/PreferencesNotifications';
 
 export function ProfilPage() {
   const { profil, rechargerProfil } = useAuth();
   const { role } = useEspace();
   const signature = useUrlFichier('profils', profil?.signature_path);
+  const { hash } = useLocation();
+  useEffect(() => {
+    if (hash) setTimeout(() => document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: 'smooth' }), 100);
+  }, [hash]);
   const infos = useForm({
     initialValues: { nom_complet: profil?.nom_complet ?? '', telephone: profil?.telephone ?? '', email: profil?.email ?? '' },
     validate: { nom_complet: (v) => (v.trim() ? null : 'Indiquez votre nom') },
@@ -111,6 +118,7 @@ export function ProfilPage() {
             </Group>
           </Card>
         )}
+        <PreferencesNotifications />
       </SimpleGrid>
     </>
   );
