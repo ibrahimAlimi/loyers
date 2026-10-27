@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router';
 import { supabase } from '@/lib/supabase';
 import { messageErreur } from '@/lib/erreurs';
 import { useAuth } from './AuthProvider';
+import { journaliser } from '@/lib/audit';
 
 /** Saisie du code à 6 chiffres (session déjà protégée par la double authentification). */
 export function SaisieCodePage() {
@@ -98,6 +99,7 @@ export function EnrolementTotp({ onTermine }: { onTermine: () => void | Promise<
     try {
       const { error } = await supabase.auth.mfa.challengeAndVerify({ factorId: facteur.id, code: valeur });
       if (error) throw new Error('Code incorrect. Vérifiez que l’heure de votre téléphone est juste et réessayez.');
+      journaliser('double_auth_activee');
       await onTermine();
     } catch (e) {
       setErreur(messageErreur(e));

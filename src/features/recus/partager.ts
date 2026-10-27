@@ -3,6 +3,7 @@ import { lienWhatsApp } from '@/lib/telephone';
 import { formatMois } from '@/lib/format';
 import { rafraichirDonnees } from '@/lib/queryClient';
 import type { Recu } from '@/lib/types';
+import { journaliser } from '@/lib/audit';
 
 export interface EtatRecu {
   annule?: boolean;
@@ -58,6 +59,7 @@ export async function partagerRecu(recu: Recu, format: 'pdf' | 'image', telephon
   const blob = format === 'pdf' ? pdf : await (await import('./pdf/genererPdf')).recuEnImage(pdf);
   const fichier = new File([blob], nomFichier(recu, format === 'pdf' ? 'pdf' : 'jpg'), { type: blob.type });
   const message = messageWhatsApp(recu);
+  journaliser('partage_recu', { espace: recu.espace_id, table: 'recus', id: recu.id, libelle: `Reçu N° ${recu.numero}`, details: { format } });
   if (navigator.canShare?.({ files: [fichier] })) {
     try {
       await navigator.share({ files: [fichier], text: message, title: `Reçu ${recu.numero}` });

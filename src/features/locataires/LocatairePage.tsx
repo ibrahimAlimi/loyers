@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActionIcon, Badge, Button, Card, Divider, Group, Menu, Modal, SimpleGrid, Skeleton, Stack, Text, Title,
 } from '@mantine/core';
@@ -30,6 +30,8 @@ import { useLocataire, type BailDetail } from './api';
 import { LocataireForm } from './LocataireForm';
 import { BlocsOrdonnes, BoutonPersonnaliser } from '@/perso/Personnaliser';
 import { useAffichage, type DefBloc } from '@/perso/useAffichage';
+import { journaliser } from '@/lib/audit';
+import { HistoriqueFiche } from '@/features/admin/audit/HistoriqueFiche';
 
 const BLOCS: DefBloc[] = [
   { cle: 'baux', libelle: 'Logement loué et Encaisser', essentiel: true },
@@ -52,6 +54,10 @@ export function LocatairePage() {
   const [caution, setCaution] = useState<{ bail: BailDetail; sens: 'versement' | 'restitution' } | null>(null);
   const [revision, setRevision] = useState<BailDetail | null>(null);
   const affichage = useAffichage('locataire', BLOCS);
+  const nomJournal = data ? `${data.locataire.nom} ${data.locataire.prenoms ?? ''}`.trim() : null;
+  useEffect(() => {
+    if (id && nomJournal) journaliser('consultation_locataire', { espace: espace.id, table: 'locataires', id, libelle: nomJournal });
+  }, [id, nomJournal, espace.id]);
 
   if (isLoading) return <Skeleton h={300} />;
   if (!data || data.locataire.supprime_le) {
@@ -214,6 +220,11 @@ export function LocatairePage() {
           </Card>
         ),
       }} />
+      <HistoriqueFiche cibles={[
+        { table: 'locataires', ids: [locataire.id] },
+        { table: 'baux', ids: baux.map((b) => b.id) },
+        { table: 'paiements', ids: paiements.map((p) => p.id) },
+      ]} />
 
       <LocataireForm opened={edition} onClose={editionForm.close} locataire={locataire} />
       {nouveauBail && <BailForm opened onClose={nouveauBailForm.close} locataireId={locataire.id} />}

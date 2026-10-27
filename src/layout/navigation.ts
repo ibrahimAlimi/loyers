@@ -1,5 +1,5 @@
 import {
-  IconBuildingEstate, IconCash, IconChartBar, IconHome, IconInbox, IconReceipt, IconSettings, IconShieldLock,
+  IconBuildingEstate, IconCash, IconChartBar, IconHistory, IconHome, IconInbox, IconReceipt, IconSettings, IconShieldLock,
   IconTrash, IconUserCircle, IconUsers, IconUsersGroup, type Icon,
 } from '@tabler/icons-react';
 import type { Action } from '@/espace/droits';
@@ -28,5 +28,6 @@ export const NAVIGATION: EntreeNavigation[] = [
   { cle: 'parametres', libelle: 'Paramètres', chemin: '/parametres', icone: IconSettings, droit: 'parametres_espace', bas: true },
   { cle: 'corbeille', libelle: 'Corbeille', chemin: '/corbeille', icone: IconTrash, droit: 'voir_corbeille', bas: true },
   { cle: 'admin', libelle: 'Administration', chemin: '/admin', icone: IconShieldLock, droit: 'admin', bas: true },
+  { cle: 'audit', libelle: "Journal d'audit", chemin: '/admin/audit', icone: IconHistory, droit: 'admin', bas: true },
   { cle: 'profil', libelle: 'Mon profil', chemin: '/profil', icone: IconUserCircle, bas: true },
 ];

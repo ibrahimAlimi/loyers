@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { notifierErreur, notifierSucces } from '@/lib/erreurs';
 import { useAuth } from '@/auth/AuthProvider';
 import { EnrolementTotp } from '@/auth/DoubleAuthPage';
+import { journaliser } from '@/lib/audit';
 
 /** Activer / désactiver la double authentification (obligatoire et non désactivable pour le super admin). */
 export function DoubleAuthCarte() {
@@ -18,6 +19,7 @@ export function DoubleAuthCarte() {
     try {
       const { data } = await supabase.auth.mfa.listFactors();
       for (const f of data?.all ?? []) await supabase.auth.mfa.unenroll({ factorId: f.id });
+      journaliser('double_auth_desactivee');
       await rechargerNiveau();
       notifierSucces('Double authentification désactivée');
     } catch (e) {

@@ -18,6 +18,7 @@ import { BlocJournal, BlocParMaison, BlocParMode, BlocParMois } from './sections
 import { BlocAnciennete, BlocArrieresMaison, BlocDebiteurs } from './sections/SectionImpayes';
 import { BlocEntreesSorties, BlocLibres, BlocOccupation } from './sections/SectionOccupation';
 import { BlocBaux, BlocGestionnaires, BlocPonctualite } from './sections/SectionLocataires';
+import { journaliser } from '@/lib/audit';
 
 interface BlocStats extends DefBloc {
   section: 'encaissements' | 'impayes' | 'occupation' | 'locataires' | 'gestionnaires';
@@ -96,6 +97,7 @@ export function StatistiquesPage() {
     setExport(type);
     try {
       const { exporterExcel, exporterPdf } = await import('./exports');
+      journaliser('export_statistiques', { espace: espace.id, libelle: periode, details: { format: type, filtres: descriptionFiltres } });
       await (type === 'pdf' ? exporterPdf : exporterExcel)(s, c, espace, debut, fin, periode, descriptionFiltres);
     } catch (e) {
       notifierErreur(e);

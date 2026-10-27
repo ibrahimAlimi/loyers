@@ -15,6 +15,7 @@ import type { Logement } from '@/lib/types';
 import { useMaison } from './api';
 import { MaisonForm } from './MaisonForm';
 import { LogementForm } from './LogementForm';
+import { HistoriqueFiche } from '@/features/admin/audit/HistoriqueFiche';
 import { BoutonPersonnaliser } from '@/perso/Personnaliser';
 import { useAffichage, type DefColonne } from '@/perso/useAffichage';
 
@@ -154,6 +155,8 @@ export function MaisonPage() {
           </Table>
         </Card>
       )}
+
+      <HistoriqueFiche cibles={[{ table: 'maisons', ids: [maison.id] }, { table: 'logements', ids: logements.map((l) => l.id) }]} />
 
       <MaisonForm opened={maisonOuverte} onClose={maisonForm.close} maison={maison} />
       {logementEdite && (

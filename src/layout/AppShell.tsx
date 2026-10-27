@@ -66,7 +66,7 @@ export function AppShell() {
       />
     );
   }
-  if (sansEspace && !['/admin', '/profil'].includes(lieu.pathname)) return <Navigate to="/admin" replace />;
+  if (sansEspace && !lieu.pathname.startsWith('/admin') && lieu.pathname !== '/profil') return <Navigate to="/admin" replace />;
 
   const roleEffectif = profil?.est_super_admin ? 'super_admin' : role;
   // Bouton flottant « Encaisser » : seulement sur les pages de travail, pas sur les formulaires de réglages
@@ -74,13 +74,14 @@ export function AppShell() {
   const boutonFlottant = !!mobile && !!espace && peut('encaisser', roleEffectif)
     && !SANS_BOUTON.some((c) => lieu.pathname.startsWith(c));
   const visibles = NAVIGATION.filter((n) => {
-    if (sansEspace) return n.cle === 'admin' || n.cle === 'profil';
+    if (sansEspace) return ['admin', 'audit', 'profil'].includes(n.cle);
     if (n.cle === 'demandes') return roleEffectif !== 'consultation';
     return !n.droit || peut(n.droit, roleEffectif);
   });
 
   const lien = (n: EntreeNavigation) => {
-    const actif = n.chemin === '/' ? lieu.pathname === '/' : !!n.chemin && lieu.pathname.startsWith(n.chemin);
+    const actif = n.chemin === '/' ? lieu.pathname === '/'
+      : n.chemin === '/admin' ? lieu.pathname === '/admin' : !!n.chemin && lieu.pathname.startsWith(n.chemin);
     const Icone = iconeMenu(n.cle, n.icone, espace?.icones_menu);
     return (
       <NavLink

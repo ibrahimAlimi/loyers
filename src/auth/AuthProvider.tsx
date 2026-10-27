@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { emailDeConnexion, supabase } from '@/lib/supabase';
+import { journaliser } from '@/lib/audit';
 import { queryClient } from '@/lib/queryClient';
 import type { Profil } from '@/lib/types';
 
@@ -78,14 +79,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (/fetch/i.test(error.message)) throw new Error('Pas de connexion Internet. Vérifiez vos données mobiles et réessayez.');
       if (/captcha/i.test(error.message)) throw new Error('La vérification anti-robot a échoué. Réessayez.');
       if (/rate limit|too many/i.test(error.message)) throw new Error('Trop de tentatives. Patientez quelques minutes avant de réessayer.');
+      void supabase.rpc('journaliser_echec_connexion', { p_identifiant: identifiant }).then(() => undefined, () => undefined);
       throw new Error('Identifiant ou mot de passe incorrect');
     }
+    journaliser('connexion');
     await chargerProfil(data.session);
   };
 
   const seDeconnecter = async () => {
     // Un appareil déconnecté (souvent partagé) ne reçoit plus les notifications de ce compte.
     await import('@/features/notifications/push').then((m) => m.desactiverPush()).catch(() => undefined);
+    await supabase.rpc('journaliser', { p_action: 'deconnexion' }).then(() => undefined, () => undefined);
     await supabase.auth.signOut();
     queryClient.clear();
   };
