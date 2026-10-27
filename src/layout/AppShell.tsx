@@ -149,7 +149,7 @@ export function AppShell() {
       </Shell.Main>
 
       {boutonFlottant && (
-        <Affix position={{ bottom: 20, right: 16 }}>
+        <Affix position={{ bottom: 20, right: 16 }} zIndex={150}>
           <Button radius="xl" size="md" leftSection={<IconCash size={20} />} onClick={() => ouvrir()} style={{ boxShadow: '0 6px 18px rgba(0,0,0,.25)' }}>
             Encaisser
           </Button>
