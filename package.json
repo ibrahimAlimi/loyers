@@ -10,7 +10,7 @@
     "types:db": "supabase gen types typescript --linked > src/lib/database.types.ts",
     "db:push": "supabase db push",
     "functions:deploy": "supabase functions deploy creer-utilisateur reinitialiser-mdp",
-    "super-admin": "tsx scripts/creer-super-admin.ts"
+    "super-admin": "tsx --env-file=.env.local scripts/creer-super-admin.ts"
   },
   "dependencies": {
     "@mantine/colors-generator": "^8.3.18",
