@@ -46,8 +46,14 @@ Deno.serve(async (req) => {
   }
 
   // ---- Utilisateur existant ? ----
-  const { data: existant } = await admin.from('profils').select('id').eq('identifiant', identifiant).maybeSingle();
+  // Rattacher un compte existant expose son profil (nom, téléphone) au nouvel espace :
+  // réservé à l'administrateur, pour qu'un propriétaire ne puisse pas « aspirer » des comptes.
+  if (c.ajouter_existant && !moi.estSuperAdmin) {
+    return erreur('Pour ajouter une personne qui a déjà un compte, contactez l\'administrateur.', 403);
+  }
+  const { data: existant } = await admin.from('profils').select('id, est_super_admin').eq('identifiant', identifiant).maybeSingle();
   if (existant && !c.ajouter_existant) return erreur('Cet identifiant est déjà utilisé.', 409);
+  if (existant?.est_super_admin) return erreur('Ce compte ne peut pas être ajouté à un espace.', 403);
 
   let userId = existant?.id as string | undefined;
   let espaceId = c.espace_id;
@@ -109,9 +115,12 @@ Deno.serve(async (req) => {
       if (role === 'gestionnaire') {
         await admin.from('maisons').update({ gestionnaire_id: userId }).in('id', c.maisons).eq('espace_id', espaceId);
       } else if (role === 'consultation') {
-        await admin
-          .from('membre_maisons')
-          .insert(c.maisons.map((maison_id) => ({ espace_id: espaceId, user_id: userId, maison_id })));
+        const { data: valides } = await admin.from('maisons').select('id').in('id', c.maisons).eq('espace_id', espaceId);
+        if (valides?.length) {
+          await admin
+            .from('membre_maisons')
+            .insert(valides.map((m) => ({ espace_id: espaceId, user_id: userId, maison_id: m.id })));
+        }
       }
     }
 

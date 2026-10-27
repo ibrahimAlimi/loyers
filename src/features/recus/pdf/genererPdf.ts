@@ -30,6 +30,7 @@ export async function recuEnImage(pdfBlob: Blob): Promise<Blob> {
   const pdfjs = await import('pdfjs-dist');
   const worker = await import('pdfjs-dist/build/pdf.worker.min.mjs?url');
   pdfjs.GlobalWorkerOptions.workerSrc = worker.default;
+  // Seuls nos propres PDF sont lus ici (pdfjs-dist ≥ 6 : plus d'évaluation de code, faille GHSA-hq66-cqwq-w95j corrigée).
   const doc = await pdfjs.getDocument({ data: await pdfBlob.arrayBuffer() }).promise;
   const page = await doc.getPage(1);
   const vue = page.getViewport({ scale: 2 });

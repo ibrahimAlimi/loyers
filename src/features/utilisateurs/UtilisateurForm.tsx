@@ -84,7 +84,9 @@ export function UtilisateurForm({ opened, onClose }: { opened: boolean; onClose:
                 ? 'Le gestionnaire encaisse et gère les locataires des maisons que vous lui confiez. Il ne peut rien supprimer.'
                 : 'Le compte Consultation voit tout (ou seulement les maisons choisies) mais ne peut rien modifier.'}
             </Text>
-            <Checkbox label="Cette personne a déjà un compte (chez un autre propriétaire)" {...form.getInputProps('ajouter_existant', { type: 'checkbox' })} />
+            {espace.role === 'super_admin' && (
+              <Checkbox label="Cette personne a déjà un compte (chez un autre propriétaire)" {...form.getInputProps('ajouter_existant', { type: 'checkbox' })} />
+            )}
             <SimpleGrid cols={{ base: 1, sm: 2 }}>
               <TextInput label="Identifiant de connexion" placeholder="paul.dossa" autoCapitalize="none" {...form.getInputProps('identifiant')} />
               {!form.values.ajouter_existant && <TextInput label="Nom complet" {...form.getInputProps('nom_complet')} />}
