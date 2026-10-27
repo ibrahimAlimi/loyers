@@ -6,3 +6,6 @@ export const queryClient = new QueryClient({
     mutations: { retry: 0 },
   },
 });
+
+/** Après une écriture : tout recharger (volumes faibles, cohérence garantie entre les écrans). */
+export const rafraichirDonnees = () => queryClient.invalidateQueries();
