@@ -7,7 +7,7 @@ export const RAPPEL_PERSONNALISER = 'Vous pouvez choisir ce qui s’affiche ici 
 export const NARRATIONS: Record<string, string[]> = {
   rappel: [RAPPEL_PERSONNALISER],
   visite: [
-    'Bienvenue ! Voici, en quelques secondes, l’essentiel de votre application.',
+    'Bienvenue ! Voici, en quelques secondes, l’essentiel de votre application. Si vous connaissez déjà, touchez « Tout passer ».',
     'Pour encaisser un loyer, touchez ici. L’application vous guide pas à pas, puis prépare le reçu.',
     'Ici, vos locataires : qui est à jour, qui est en retard, et combien il doit.',
     'Ici, tous vos reçus. Vous pouvez les renvoyer sur WhatsApp ou les réimprimer.',
@@ -85,6 +85,20 @@ export const NARRATIONS: Record<string, string[]> = {
     'Une fenêtre vous explique toujours ce qui sera touché avant de confirmer.',
     'Dans la Corbeille, touchez « Restaurer » pour tout remettre comme avant.',
     'Seul l’administrateur peut supprimer définitivement.',
+  ],
+  presentation: [
+    'Mes Loyers : la gestion de vos loyers, simplement.',
+    'Aujourd’hui, beaucoup de propriétaires notent leurs loyers dans des cahiers, ou paient cher des logiciels compliqués. On perd du temps, des reçus, et parfois de l’argent.',
+    'Mes Loyers réunit tout au même endroit : vos maisons, vos logements, vos locataires et leurs baux.',
+    'Pour encaisser un loyer, quatre étapes suffisent : le locataire, le montant, le mode de paiement, et c’est fait. Espèces, MTN, Moov ou Celtiis.',
+    'Le reçu est prêt aussitôt, à vos couleurs. Vous l’envoyez sur WhatsApp en un geste.',
+    'Vos chiffres sont toujours à jour : ce qui est encaissé, ce qui reste à percevoir, qui doit combien, et depuis quand.',
+    'Vous pouvez confier des maisons à des gestionnaires. Vous êtes prévenu de chaque encaissement, et rien ne s’efface sans votre accord.',
+    'Chaque reçu porte un code QR. Il suffit de le scanner pour vérifier qu’il est authentique.',
+    'Mes Loyers marche sur le téléphone et sur l’ordinateur, avec les mêmes données, et s’installe comme une application.',
+    'Vos données sont protégées : double authentification, sauvegardes, journal de toutes les actions, et une corbeille pour ne rien perdre par erreur.',
+    'Les formules commencent gratuitement, jusqu’à trois logements, puis à partir de cinq mille francs par mois.',
+    'Demandez votre accès dès aujourd’hui sur Mes Loyers.',
   ],
   installer: [
     'Installez l’application pour l’ouvrir comme les autres, depuis l’écran d’accueil.',

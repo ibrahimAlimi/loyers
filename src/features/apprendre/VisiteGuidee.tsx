@@ -86,7 +86,7 @@ export function VisiteGuidee({ onFin }: { onFin: () => void }) {
             <ActionIcon variant="subtle" color="gray" aria-label={muet ? 'Remettre le son' : 'Couper le son'} onClick={basculerSon}>
               {muet ? <IconVolumeOff size={18} /> : <IconVolume size={18} />}
             </ActionIcon>
-            {!derniere && <Button variant="subtle" color="gray" size="xs" onClick={onFin}>Passer</Button>}
+            {!derniere && <Button variant="light" color="gray" size="xs" onClick={onFin}>Tout passer</Button>}
           </Group>
           <Group gap={6} wrap="nowrap">
             {i > 0 && <Button variant="default" size="xs" onClick={() => setI(i - 1)}>Retour</Button>}

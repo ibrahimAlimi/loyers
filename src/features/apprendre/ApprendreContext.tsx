@@ -22,6 +22,12 @@ interface ContexteApprendre {
 
 const Ctx = createContext<ContexteApprendre | null>(null);
 
+// Mémoire locale en plus du compte : même si l'enregistrement en ligne échoue (réseau),
+// la visite ne revient pas à chaque rechargement sur cet appareil.
+const cleVisite = (id: string) => `mes-loyers:visite-vue:${id}`;
+const visiteVueIci = (id: string | undefined) => { try { return !!id && localStorage.getItem(cleVisite(id)) === '1'; } catch { return false; } };
+const noterVisiteIci = (id: string | undefined) => { try { if (id) localStorage.setItem(cleVisite(id), '1'); } catch { /* stockage indisponible */ } };
+
 export function ApprendreProvider({ children }: { children: ReactNode }) {
   const { profil } = useAuth();
   const { espace } = useEspace();
@@ -29,21 +35,26 @@ export function ApprendreProvider({ children }: { children: ReactNode }) {
   const lieu = useLocation();
   const [demoId, setDemoId] = useState<string | null>(null);
   const [visite, setVisite] = useState(false);
+  const [vueIci, setVueIci] = useState(() => visiteVueIci(profil?.id));
+  useEffect(() => { setVueIci(visiteVueIci(profil?.id)); }, [profil?.id]);
   const tutos = ((profil?.preferences as Record<string, unknown> | undefined)?.tutoriels ?? {}) as Tutoriels;
 
   const enregistrer = useCallback((modifier: (t: Tutoriels) => Tutoriels) => {
     void majPreferences((p) => ({ ...p, tutoriels: modifier({ ...((p.tutoriels as Tutoriels) ?? {}) }) })).catch(() => undefined);
   }, [majPreferences]);
 
-  // Première connexion : la visite guidée démarre seule sur l'Accueil (une seule fois)
+  // Première connexion : la visite guidée démarre seule sur l'Accueil, une seule fois.
+  // Terminée ou passée, elle ne revient plus ; on la relance soi-même depuis « Apprendre ».
   useEffect(() => {
-    if (!profil || !espace || tutos.visite || lieu.pathname !== '/' || profil.doit_changer_mdp) return;
+    if (!profil || !espace || tutos.visite || vueIci || visite || lieu.pathname !== '/' || profil.doit_changer_mdp) return;
     const t = setTimeout(() => setVisite(true), 900);
     return () => clearTimeout(t);
-  }, [profil, espace, tutos.visite, lieu.pathname]);
+  }, [profil, espace, tutos.visite, vueIci, visite, lieu.pathname]);
 
   const finVisite = () => {
     setVisite(false);
+    setVueIci(true);
+    noterVisiteIci(profil?.id);
     if (!tutos.visite) enregistrer((t) => ({ ...t, visite: new Date().toISOString() }));
   };
   const finDemo = () => {
