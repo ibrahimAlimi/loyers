@@ -86,7 +86,7 @@ begin
   v_recus := array(select id from recus where paiement_id = any (v_paiements) or mouvement_caution_id = any (v_mvts));
 
   return query values
-    ('espaces', case when p_table = 'espaces' then array[p_id] else '{}'::uuid[] end),
+    ('espaces'::text, case when p_table = 'espaces' then array[p_id] else '{}'::uuid[] end),
     ('maisons', v_maisons), ('logements', v_logements), ('locataires', v_locataires), ('baux', v_baux),
     ('revisions_loyer', v_revs), ('paiements', v_paiements), ('imputations', v_imput),
     ('mouvements_caution', v_mvts), ('recus', v_recus), ('demandes', v_demandes);

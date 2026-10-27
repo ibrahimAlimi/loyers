@@ -76,7 +76,7 @@ export default function EncaisserWizard({ pre, onFermer }: { pre?: PreRemplissag
     try {
       const r = await encaisser.mutateAsync({
         bailId, date: dayjs(date).format('YYYY-MM-DD'), montant, mode, reference, payeur: payeur || bail?.nom || '',
-        mois: moisChoisis, reste, motifRemise, cle, remplace: pre?.remplacePaiementId,
+        mois: moisChoisis, reste: montant < totalChoisi ? reste : 'partiel', motifRemise, cle, remplace: pre?.remplacePaiementId,
       });
       setRecu(r);
       setEtape(3);

@@ -106,7 +106,7 @@ declare v_espace uuid;
 begin
   select espace_id into v_espace from locataires where id = p_locataire;
   if peut_gerer_espace(v_espace) then return true; end if;
-  if role_dans(v_espace) <> 'gestionnaire' then return false; end if;
+  if coalesce(role_dans(v_espace)::text, '') <> 'gestionnaire' then return false; end if;
   return exists (select 1 from baux b join logements l on l.id = b.logement_id
                  where b.locataire_id = p_locataire and peut_gerer_maison(l.maison_id))
       or not exists (select 1 from baux b where b.locataire_id = p_locataire and b.supprime_le is null);
