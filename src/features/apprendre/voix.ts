@@ -34,7 +34,9 @@ function minuterie(ms: number, fin: () => void): Lecture {
   };
 }
 
-export function lire(cle: string, texte: string, { muet, onFin }: { muet: boolean; onFin: () => void }): Lecture {
+export function lire(cle: string, texte: string, { muet, onFin, duree }: {
+  muet: boolean; onFin: () => void; /** Durée imposée en mode muet (export vidéo). */ duree?: number;
+}): Lecture {
   let actuelle: Lecture | null = null;
   let annule = false;
   let enPause = false;
@@ -62,7 +64,7 @@ export function lire(cle: string, texte: string, { muet, onFin }: { muet: boolea
   };
 
   if (muet) {
-    actuelle = minuterie(dureeTexte(texte), finir);
+    actuelle = minuterie(duree ?? dureeTexte(texte), finir);
   } else {
     void chargerManifeste().then((m) => {
       if (annule) return;

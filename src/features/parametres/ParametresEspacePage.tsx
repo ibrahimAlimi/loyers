@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import {
-  Alert, Button, Card, ColorInput, Group, Image, NumberInput, SimpleGrid, Stack, Tabs, Text, TextInput, Title, UnstyledButton,
+  Alert, Button, Card, ColorInput, CopyButton, Group, Image, NumberInput, SimpleGrid, Stack, Tabs, Text, TextInput, Title, UnstyledButton,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { IconCheck, IconEye, IconStar } from '@tabler/icons-react';
@@ -40,8 +40,12 @@ export function ParametresEspacePage() {
       email: espace.email ?? '',
       couleur_primaire: espace.couleur_primaire,
       delai_retard_jours: espace.delai_retard_jours,
+      slug: espace.slug ?? '',
     },
-    validate: { nom: (v) => (v.trim() ? null : "Donnez un nom à l'espace") },
+    validate: {
+      nom: (v) => (v.trim() ? null : "Donnez un nom à l'espace"),
+      slug: (v) => (!v.trim() || /^[a-z0-9-]{3,40}$/.test(v.trim()) ? null : '3 à 40 caractères : lettres minuscules, chiffres et tirets'),
+    },
   });
 
   const enregistrer = useMutation({
@@ -49,8 +53,9 @@ export function ParametresEspacePage() {
       const { error } = await supabase.from('espaces').update({
         nom: v.nom.trim(), ville: v.ville.trim() || null, adresse: v.adresse.trim() || null,
         telephone: v.telephone.trim() || null, email: v.email.trim() || null,
-        couleur_primaire: v.couleur_primaire, delai_retard_jours: v.delai_retard_jours,
+        couleur_primaire: v.couleur_primaire, delai_retard_jours: v.delai_retard_jours, slug: v.slug.trim() || null,
       }).eq('id', espace.id);
+      if (error?.code === '23505') throw new Error('Cette adresse est déjà prise par un autre espace. Choisissez-en une autre.');
       if (error) throw error;
     },
     onSuccess: async () => {
@@ -135,6 +140,18 @@ export function ParametresEspacePage() {
                 </SimpleGrid>
                 <NumberInput label="Jours de tolérance avant de compter un loyer en retard" min={0} max={60}
                   {...form.getInputProps('delai_retard_jours')} />
+                <TextInput label="Adresse de connexion de votre espace (facultatif)"
+                  description="Vos gestionnaires se connectent sur un écran à votre nom et à votre logo."
+                  leftSection={<Text size="xs" c="dimmed" pl={6}>/e/</Text>} leftSectionWidth={34} placeholder="immobilier-adjovi"
+                  {...form.getInputProps('slug')}
+                  onChange={(e) => form.setFieldValue('slug', e.currentTarget.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))} />
+                <CopyButton value={`${window.location.origin}/e/${espace.slug || espace.id}`}>
+                  {({ copied, copy }) => (
+                    <Button variant="subtle" size="xs" w="fit-content" onClick={copy}>
+                      {copied ? 'Lien copié !' : `Copier le lien de connexion (${window.location.host}/e/${espace.slug || '…'})`}
+                    </Button>
+                  )}
+                </CopyButton>
                 <Group justify="flex-end"><Button type="submit" loading={enregistrer.isPending}>Enregistrer</Button></Group>
               </Stack>
             </form>

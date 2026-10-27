@@ -30,8 +30,17 @@ const ecrireMuet = (v: boolean) => { try { localStorage.setItem(CLE_MUET, v ? '1
 
 interface Position { x: number; y: number; l: number; h: number }
 
+/** Mode export vidéo : son coupé dans la page, durées imposées, étapes signalées au script d'enregistrement. */
+export interface ExportVideo {
+  durees: number[];
+  surEtape: (i: number) => void;
+  surFin: () => void;
+}
+
 /** Joue une démo : scènes scriptées, doigt animé, surbrillance, sous-titres et voix off. */
-export function LecteurDemo({ demo, onTermine }: { demo: Demo; onTermine: () => void }) {
+export function LecteurDemo({ demo, onTermine, hauteur = 520, exportVideo }: {
+  demo: Demo; onTermine: () => void; hauteur?: number | string; exportVideo?: ExportVideo;
+}) {
   const textes = NARRATIONS[demo.id] ?? [];
   const etapes = demo.personnaliser
     ? [...demo.etapes, { ...demo.etapes[demo.etapes.length - 1], doigt: 'personnaliser', geste: 'montrer' as const }]
@@ -51,9 +60,11 @@ export function LecteurDemo({ demo, onTermine }: { demo: Demo; onTermine: () => 
 
   // Voix et enchaînement des étapes
   useEffect(() => {
-    if (fini) return;
+    if (fini) { exportVideo?.surFin(); return; }
+    exportVideo?.surEtape(i);
     const l = lire(cle(i), texte(i), {
-      muet,
+      muet: muet || !!exportVideo,
+      duree: exportVideo?.durees[i],
       onFin: () => setTimeout(() => (i + 1 >= etapes.length ? setFini(true) : setI(i + 1)), 700),
     });
     lecture.current = l;
@@ -82,7 +93,7 @@ export function LecteurDemo({ demo, onTermine }: { demo: Demo; onTermine: () => 
 
   return (
     <Box>
-      <Paper withBorder radius="lg" style={{ overflow: 'hidden', position: 'relative', height: 520, background: 'var(--mantine-color-gray-0)' }}>
+      <Paper withBorder radius="lg" style={{ overflow: 'hidden', position: 'relative', height: hauteur, background: 'var(--mantine-color-gray-0)' }}>
         <div ref={scene} style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} aria-hidden>
           {demo.scenes[etape.scene]?.(etape.etat ?? {})}
           {doigt && (
@@ -103,7 +114,7 @@ export function LecteurDemo({ demo, onTermine }: { demo: Demo; onTermine: () => 
       </Paper>
 
       <Progress value={fini ? 100 : (100 * i) / etapes.length} size="sm" mt="xs" radius="xl" aria-label="Avancement" />
-      <Group justify="space-between" mt="sm">
+      {!exportVideo && <Group justify="space-between" mt="sm">
         <Group gap={6}>
           <Tooltip label="Revoir"><ActionIcon variant="default" size="lg" aria-label="Revoir" onClick={revoir}><IconRotate size={20} /></ActionIcon></Tooltip>
           <Tooltip label={pause ? 'Reprendre' : 'Pause'}>
@@ -118,7 +129,7 @@ export function LecteurDemo({ demo, onTermine }: { demo: Demo; onTermine: () => 
           </Tooltip>
         </Group>
         <Button onClick={onTermine}>J'ai compris</Button>
-      </Group>
+      </Group>}
     </Box>
   );
 }

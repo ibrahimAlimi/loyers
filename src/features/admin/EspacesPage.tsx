@@ -9,6 +9,9 @@ import { PageEntete } from '@/layout/PageEntete';
 import { EtatVide } from '@/ui/EtatVide';
 import { useEspacesAdmin, useModifierEspaceAdmin, type EspaceAdmin } from './api';
 import { EspaceForm } from './EspaceForm';
+import { DemandesAcces, UtilisationPlateforme } from './DemandesAcces';
+import { useUtilisation } from './api';
+import { formatDateHeure } from '@/lib/format';
 
 const FORMULES = [
   { value: 'decouverte', label: 'Découverte (3 logements, gratuit)', max: 3 },
@@ -23,11 +26,14 @@ export function EspacesPage() {
   const [ouvert, { open, close }] = useDisclosure(false);
   const [edition, setEdition] = useState<EspaceAdmin | null>(null);
   const navigate = useNavigate();
+  const { data: utilisation } = useUtilisation();
 
   return (
     <>
       <PageEntete titre="Administration" sousTitre="Les espaces des propriétaires"
         actions={<Button leftSection={<IconPlus size={18} />} onClick={open}>Créer un propriétaire</Button>} />
+      <DemandesAcces />
+      <UtilisationPlateforme />
       {isLoading ? <Skeleton h={200} /> : !data.length ? (
         <EtatVide titre="Aucun espace" message="Créez le premier propriétaire (par exemple votre père) et son espace." />
       ) : (
@@ -46,6 +52,7 @@ export function EspacesPage() {
                   <Text size="sm" c="dimmed">
                     {e.proprietaire ?? 'Sans propriétaire'} · {e.nb_logements} logement(s) · {e.nb_membres} compte(s)
                     {e.limites_actives ? ` · limite ${e.max_logements} logements` : ''}
+                    {utilisation?.activite[e.id] ? ` · dernière activité le ${formatDateHeure(utilisation.activite[e.id]!)}` : ''}
                   </Text>
                 </div>
                 <Group gap="xs">

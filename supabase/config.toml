@@ -418,3 +418,7 @@ enabled = true
 # Appelée par pg_cron avec un secret partagé (x-cron-secret), sans jeton utilisateur.
 [functions.envoyer-notifications]
 verify_jwt = false
+
+# Formulaire public « Demander un accès » (protégé par CAPTCHA et limite par adresse IP).
+[functions.demande-acces]
+verify_jwt = false

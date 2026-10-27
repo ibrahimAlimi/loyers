@@ -4,13 +4,24 @@ import { useForm } from '@mantine/form';
 import { motDePasseProvisoire } from '@/lib/fonctions';
 import { notifierErreur } from '@/lib/erreurs';
 import { useCreerEspace } from './api';
+import { lienWhatsApp } from '@/lib/telephone';
 
 /** Création d'un propriétaire et de son espace (super admin). */
-export function EspaceForm({ opened, onClose }: { opened: boolean; onClose: () => void }) {
+export function EspaceForm({ opened, onClose, prerempli, onCree }: {
+  opened: boolean;
+  onClose: () => void;
+  /** Depuis une demande d'accès : coordonnées du demandeur. */
+  prerempli?: { nom_complet: string; telephone: string; email: string | null; ville: string | null };
+  onCree?: (espaceId: string, identifiant: string) => void;
+}) {
   const creer = useCreerEspace();
-  const [resultat, setResultat] = useState<{ identifiant: string; mdp: string } | null>(null);
+  const [resultat, setResultat] = useState<{ identifiant: string; mdp: string; telephone: string } | null>(null);
   const form = useForm({
-    initialValues: { nom: '', prefixe_recu: '', ville: 'Cotonou', identifiant: '', nom_complet: '', telephone: '', email: '' },
+    initialValues: {
+      nom: prerempli ? `Immobilier ${prerempli.nom_complet.split(' ').slice(-1)[0]}` : '', prefixe_recu: '',
+      ville: prerempli?.ville ?? 'Cotonou', identifiant: '', nom_complet: prerempli?.nom_complet ?? '',
+      telephone: prerempli?.telephone ?? '', email: prerempli?.email ?? '',
+    },
     validate: {
       nom: (v) => (v.trim() ? null : "Nom de l'espace requis"),
       prefixe_recu: (v) => (/^[A-Za-z]{3}$/.test(v.trim()) ? null : '3 lettres (ex. ADJ)'),
@@ -22,12 +33,13 @@ export function EspaceForm({ opened, onClose }: { opened: boolean; onClose: () =
   const valider = form.onSubmit(async (v) => {
     const mdp = motDePasseProvisoire();
     try {
-      await creer.mutateAsync({
+      const r = await creer.mutateAsync({
         espace: { nom: v.nom, prefixe_recu: v.prefixe_recu.toUpperCase(), ville: v.ville },
         identifiant: v.identifiant.trim().toLowerCase(), nom_complet: v.nom_complet, telephone: v.telephone,
         email: v.email, mot_de_passe_provisoire: mdp,
       });
-      setResultat({ identifiant: v.identifiant.trim().toLowerCase(), mdp });
+      setResultat({ identifiant: v.identifiant.trim().toLowerCase(), mdp, telephone: v.telephone });
+      onCree?.(r.espace_id, v.identifiant.trim().toLowerCase());
     } catch (e) {
       notifierErreur(e);
     }
@@ -45,6 +57,14 @@ export function EspaceForm({ opened, onClose }: { opened: boolean; onClose: () =
             <CopyButton value={`Bonjour, voici vos accès à Mes Loyers : ${window.location.origin}\nIdentifiant : ${resultat.identifiant}\nMot de passe provisoire : ${resultat.mdp}`}>
               {({ copied, copy }) => <Button variant="light" onClick={copy}>{copied ? 'Copié !' : 'Copier pour WhatsApp'}</Button>}
             </CopyButton>
+            {resultat.telephone && (
+              <Button variant="light" color="green" component="a" target="_blank" rel="noopener"
+                href={lienWhatsApp(resultat.telephone, `Bonjour, voici vos accès à Mes Loyers : ${window.location.origin}
+Identifiant : ${resultat.identifiant}
+Mot de passe provisoire : ${resultat.mdp}`)}>
+                Envoyer sur WhatsApp
+              </Button>
+            )}
             <Button onClick={fermer}>Terminer</Button>
           </Group>
         </Stack>

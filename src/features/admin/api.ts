@@ -56,3 +56,65 @@ export function useModifierEspaceAdmin() {
     onSuccess: rafraichirDonnees,
   });
 }
+
+export interface DemandeAcces {
+  id: string;
+  nom: string;
+  telephone: string;
+  email: string | null;
+  ville: string | null;
+  nb_logements: number | null;
+  message: string | null;
+  statut: 'en_attente' | 'acceptee' | 'refusee';
+  cree_le: string;
+}
+
+export function useDemandesAcces() {
+  return useQuery({
+    queryKey: ['demandes-acces'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('demandes_acces').select('*')
+        .eq('statut', 'en_attente').order('cree_le', { ascending: false });
+      if (error) throw error;
+      return data as DemandeAcces[];
+    },
+  });
+}
+
+/** Accepte ou refuse une demande, puis prévient le demandeur par e-mail s'il en a donné un. */
+export function useTraiterDemandeAcces() {
+  return useMutation({
+    mutationFn: async (v: { id: string; accepter: boolean; espaceId?: string; reponse?: string; identifiant?: string }) => {
+      const { error } = await supabase.rpc('traiter_demande_acces', {
+        p_id: v.id, p_accepter: v.accepter, p_espace: v.espaceId ?? null, p_reponse: v.reponse ?? null,
+      });
+      if (error) throw error;
+      return appelerFonction<{ envoye: boolean }>('repondre-demande-acces', { demande_id: v.id, identifiant: v.identifiant })
+        .catch(() => ({ envoye: false }));
+    },
+    onSuccess: rafraichirDonnees,
+  });
+}
+
+export interface Utilisation {
+  base_octets: number;
+  base_limite: number;
+  stockage_octets: number;
+  stockage_limite: number;
+  nb_espaces: number;
+  nb_comptes: number;
+  nb_logements: number;
+  demandes_en_attente: number;
+  activite: Record<string, string | null>;
+}
+
+export function useUtilisation() {
+  return useQuery({
+    queryKey: ['utilisation-plateforme'],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('utilisation_plateforme');
+      if (error) throw error;
+      return data as Utilisation;
+    },
+  });
+}

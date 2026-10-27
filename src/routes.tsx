@@ -20,10 +20,21 @@ import { ProfilPage } from './features/parametres/ProfilPage';
 import { EspacesPage } from './features/admin/EspacesPage';
 import { AuditPage } from './features/admin/audit/AuditPage';
 import { ApprendrePage } from './features/apprendre/ApprendrePage';
+import { VitrinePage } from './features/vitrine/VitrinePage';
+import { DemandeAccesPage } from './features/vitrine/DemandeAccesPage';
+import { InstallerPage } from './features/vitrine/InstallerPage';
+import { ConditionsPage } from './features/vitrine/ConditionsPage';
+import { PresentationPage } from './features/vitrine/PresentationPage';
 import { EtatVide } from './ui/EtatVide';
 
 export const router = createBrowserRouter([
   { path: '/connexion', element: <ConnexionPage /> },
+  { path: '/e/:cle', element: <ConnexionPage /> },
+  { path: '/bienvenue', element: <VitrinePage /> },
+  { path: '/demande-acces', element: <DemandeAccesPage /> },
+  { path: '/installer', element: <InstallerPage /> },
+  { path: '/conditions', element: <ConditionsPage /> },
+  { path: '/presentation', element: <PresentationPage /> },
   { path: '/v/:code', element: <VerificationPage /> },
   {
     element: <RequireAuth />,

@@ -1,5 +1,6 @@
 import { Badge, Button, Card, Group, SimpleGrid, Stack, Text, ThemeIcon, UnstyledButton } from '@mantine/core';
-import { IconCheck, IconPlayerPlay, IconRoute } from '@tabler/icons-react';
+import { IconCheck, IconDeviceMobile, IconPlayerPlay, IconPresentation, IconRoute } from '@tabler/icons-react';
+import { Link } from 'react-router';
 import { formatDate } from '@/lib/format';
 import { PageEntete } from '@/layout/PageEntete';
 import { useApprendre } from './ApprendreContext';
@@ -19,7 +20,11 @@ export function ApprendrePage() {
   return (
     <>
       <PageEntete titre="Apprendre" sousTitre={`Des démonstrations courtes, avec la voix. ${nbVues} sur ${DEMOS.length} vues.`}
-        actions={<Button variant="light" leftSection={<IconRoute size={18} />} onClick={lancerVisite}>Revoir la visite guidée</Button>} />
+        actions={<>
+          <Button variant="light" leftSection={<IconRoute size={18} />} onClick={lancerVisite}>Revoir la visite guidée</Button>
+          <Button variant="default" leftSection={<IconDeviceMobile size={18} />} component={Link} to="/installer">Installer l'application</Button>
+          <Button variant="default" leftSection={<IconPresentation size={18} />} component={Link} to="/presentation">Présentation</Button>
+        </>} />
       <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }}>
         {DEMOS.map((d) => (
           <UnstyledButton key={d.id} onClick={() => ouvrirDemo(d.id)}>

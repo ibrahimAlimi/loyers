@@ -17,6 +17,7 @@ export const LIBELLE_ACTION: Record<string, string> = {
   demande_traitee: 'Demande traitée',
   double_auth_activee: 'Double authentification activée',
   double_auth_desactivee: 'Double authentification désactivée',
+  demande_acces: 'Demande d’accès traitée',
   purge_audit: 'Purge du journal',
   purge_historique: 'Purge de l’historique',
 };

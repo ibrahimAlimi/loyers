@@ -20,6 +20,7 @@ export interface Espace {
   id: string;
   nom: string;
   prefixe_recu: string;
+  slug: string | null;
   ville: string | null;
   adresse: string | null;
   telephone: string | null;

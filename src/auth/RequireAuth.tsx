@@ -1,6 +1,7 @@
 import { Center, Loader } from '@mantine/core';
 import { Navigate, Outlet, useLocation } from 'react-router';
 import { useAuth } from './AuthProvider';
+import { estInstallee } from '@/lib/installation';
 
 export const CHEMIN_CODE = '/double-authentification';
 export const CHEMIN_ACTIVATION = '/double-authentification/activer';
@@ -17,7 +18,11 @@ export function RequireAuth() {
       </Center>
     );
   }
-  if (!session) return <Navigate to="/connexion" replace state={{ depuis: ici }} />;
+  if (!session) {
+    // Visiteur sur l'adresse principale : la vitrine ; application installée ou lien profond : la connexion
+    if (ici === '/' && !estInstallee()) return <Navigate to="/bienvenue" replace />;
+    return <Navigate to="/connexion" replace state={{ depuis: ici }} />;
+  }
 
   // 1. Double authentification activée mais code pas encore saisi pour cette session
   if (niveau.requis === 'aal2' && niveau.actuel !== 'aal2') {
