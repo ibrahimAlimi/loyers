@@ -39,7 +39,7 @@ export function AccueilPage() {
       </div>
 
       <SimpleGrid cols={{ base: 2, md: 4 }} spacing="sm">
-        <CarteChiffre chargement={isLoading} libelle={`Encaissé en ${mois}`} valeur={formatFCFA(r?.encaisse)} couleur="espace.7" />
+        <CarteChiffre chargement={isLoading} libelle={`Encaissé en ${mois}`} valeur={formatFCFA(r?.encaisse)} couleur="espace" />
         <CarteChiffre chargement={isLoading} libelle="Reste à percevoir" valeur={formatFCFA(r?.reste_a_percevoir)}
           couleur={(r?.reste_a_percevoir ?? 0) > 0 ? 'orange.8' : undefined}
           detail={r ? `${r.nb_retards} locataire${r.nb_retards > 1 ? 's' : ''} en retard` : undefined} />
@@ -51,7 +51,7 @@ export function AccueilPage() {
       <SimpleGrid cols={{ base: 2, sm: 5 }} spacing="sm">
         {peut('encaisser', role) && (
           <UnstyledButton onClick={() => ouvrir()} style={{ gridColumn: 'span 2' }}>
-            <Card radius="lg" padding="md" bg="espace.7" c="white" h="100%">
+            <Card radius="lg" padding="md" bg="espace" c="white" h="100%">
               <Group justify="center" gap="sm" h="100%">
                 <IconCash size={28} />
                 <Text fw={800} size="lg">Encaisser un loyer</Text>
@@ -63,7 +63,7 @@ export function AccueilPage() {
           <UnstyledButton key={t.libelle} onClick={t.aller}>
             <Card withBorder radius="lg" padding="md" h="100%">
               <Stack align="center" gap={4}>
-                <t.icone size={26} color="var(--mantine-color-espace-7)" />
+                <t.icone size={26} color="var(--mantine-color-espace-filled)" />
                 <Text fw={700} size="sm">{t.libelle}</Text>
               </Stack>
             </Card>

@@ -10,16 +10,20 @@ export const COULEURS_PROPOSEES = [
 
 /** Thème Mantine généré à partir de la couleur principale de l'espace. */
 export function genererThemeEspace(couleur: string | null | undefined): MantineThemeOverride {
+  const base = (couleur || COULEUR_DEFAUT).toLowerCase();
   let palette;
   try {
-    palette = generateColors(couleur || COULEUR_DEFAUT);
+    palette = generateColors(base);
   } catch {
     palette = generateColors(COULEUR_DEFAUT);
   }
+  // La nuance principale doit être exactement la couleur choisie (sinon le générateur peut prendre une teinte trop claire)
+  const index = palette.findIndex((c) => c.toLowerCase() === base);
+  const nuance = (index >= 0 ? index : 7) as 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
   return createTheme({
     colors: { espace: palette },
     primaryColor: 'espace',
-    primaryShade: 7,
+    primaryShade: nuance,
     defaultRadius: 'md',
     fontFamily: 'Inter, system-ui, -apple-system, "Segoe UI", sans-serif',
     headings: { fontFamily: 'Inter, system-ui, -apple-system, "Segoe UI", sans-serif', fontWeight: '700' },

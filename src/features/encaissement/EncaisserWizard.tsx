@@ -260,12 +260,12 @@ function EtapeMois({ bail, echeances, chargement, choisis, onChoisir, total }: {
       {!autre && options.map((o) => (
         <UnstyledButton key={o.join()} onClick={() => onChoisir(o)}>
           <Card withBorder radius="md" padding="sm"
-            style={egal(o, choisis) ? { borderColor: 'var(--mantine-color-espace-6)', background: 'var(--mantine-color-espace-0)', borderWidth: 2 } : undefined}>
+            style={egal(o, choisis) ? { borderColor: 'var(--mantine-color-espace-filled)', background: 'var(--mantine-color-espace-0)', borderWidth: 2 } : undefined}>
             <Group justify="space-between">
               <Text fw={600}>{libelle(o)}</Text>
               <Group gap="xs">
                 <Text fw={700} className="montant">{formatFCFA(echeances.filter((e) => o.includes(e.mois)).reduce((s, e) => s + e.reste, 0))}</Text>
-                {egal(o, choisis) && <IconCheck size={18} color="var(--mantine-color-espace-6)" />}
+                {egal(o, choisis) && <IconCheck size={18} color="var(--mantine-color-espace-filled)" />}
               </Group>
             </Group>
           </Card>

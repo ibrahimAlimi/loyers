@@ -134,7 +134,7 @@ function Cadre({ titre, texte, children }: { titre: string; texte: string; child
     <Center mih="100vh" p="md">
       <Paper withBorder radius="lg" p="lg" w="100%" maw={440}>
         <Stack>
-          <Center><IconShieldLock size={44} color="var(--mantine-color-espace-7)" /></Center>
+          <Center><IconShieldLock size={44} color="var(--mantine-color-espace-filled)" /></Center>
           <Title order={2} size="h3" ta="center">{titre}</Title>
           <Text c="dimmed" size="sm" ta="center">{texte}</Text>
           {children}
