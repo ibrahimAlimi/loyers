@@ -3,10 +3,21 @@ import { generateColors } from '@mantine/colors-generator';
 
 export const COULEUR_DEFAUT = '#0f766e';
 
-/** Couleurs proposées pour un espace (toutes lisibles avec du texte blanc). */
-export const COULEURS_PROPOSEES = [
-  '#0f766e', '#1d4ed8', '#7c2d12', '#9f1239', '#6d28d9', '#15803d', '#b45309', '#0e7490', '#334155', '#a21caf',
+/** Thèmes prêts à l'emploi (tous lisibles avec du texte blanc, contraste ≥ 4,5). */
+export const THEMES: { nom: string; couleur: string }[] = [
+  { nom: 'Lagune', couleur: '#0f766e' },
+  { nom: 'Bleu roi', couleur: '#1d4ed8' },
+  { nom: 'Terre cuite', couleur: '#7c2d12' },
+  { nom: 'Bordeaux', couleur: '#9f1239' },
+  { nom: 'Violet', couleur: '#6d28d9' },
+  { nom: 'Forêt', couleur: '#15803d' },
+  { nom: 'Ocre', couleur: '#b45309' },
+  { nom: 'Océan', couleur: '#0e7490' },
+  { nom: 'Ardoise', couleur: '#334155' },
+  { nom: 'Prune', couleur: '#a21caf' },
 ];
+
+export const COULEURS_PROPOSEES = THEMES.map((t) => t.couleur);
 
 /** Thème Mantine généré à partir de la couleur principale de l'espace. */
 export function genererThemeEspace(couleur: string | null | undefined): MantineThemeOverride {

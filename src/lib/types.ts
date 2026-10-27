@@ -28,6 +28,7 @@ export interface Espace {
   cachet_path: string | null;
   signature_path: string | null;
   couleur_primaire: string;
+  icones_menu: Record<string, string>;
   formule: string;
   limites_actives: boolean;
   max_logements: number | null;

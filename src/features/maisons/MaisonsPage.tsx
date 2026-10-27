@@ -9,19 +9,31 @@ import { PageEntete } from '@/layout/PageEntete';
 import { EtatVide } from '@/ui/EtatVide';
 import { useMaisons } from './api';
 import { MaisonForm } from './MaisonForm';
+import { BoutonPersonnaliser } from '@/perso/Personnaliser';
+import { useAffichage, type DefColonne } from '@/perso/useAffichage';
+
+const INFOS: DefColonne[] = [
+  { cle: 'occupation', libelle: 'Logements occupés', mobile: true },
+  { cle: 'adresse', libelle: 'Quartier et ville', mobile: true },
+  { cle: 'encaisse', libelle: 'Encaissé ce mois', mobile: true },
+  { cle: 'gestionnaire', libelle: 'Gestionnaire' },
+];
 
 export function MaisonsPage() {
   const { role } = useEspaceCourant();
   const { data, isLoading } = useMaisons();
   const [ouvert, { open, close }] = useDisclosure(false);
   const navigate = useNavigate();
+  const affichage = useAffichage('maisons', [], INFOS);
+  const voir = affichage.colonne;
   const ajouter = peut('gerer_maisons', role) && (
     <Button leftSection={<IconPlus size={18} />} onClick={open}>Ajouter une maison</Button>
   );
 
   return (
     <>
-      <PageEntete titre="Maisons" sousTitre="Vos immeubles et leurs logements" actions={ajouter} />
+      <PageEntete titre="Maisons" sousTitre="Vos immeubles et leurs logements"
+        actions={<><BoutonPersonnaliser affichage={affichage} titreColonnes="Informations affichées sur chaque maison" />{ajouter}</>} />
       {isLoading ? (
         <Skeleton h={140} />
       ) : !data?.length ? (
@@ -34,14 +46,16 @@ export function MaisonsPage() {
               <Stack gap={6}>
                 <Group justify="space-between" wrap="nowrap">
                   <Text fw={800} size="lg" truncate>{m.nom}</Text>
-                  <Badge variant="light">{m.nb_occupes} / {m.nb_logements} occupés</Badge>
+                  {voir('occupation') && <Badge variant="light">{m.nb_occupes} / {m.nb_logements} occupés</Badge>}
                 </Group>
-                <Text c="dimmed" size="sm">{[m.quartier, m.ville].filter(Boolean).join(' · ') || '—'}</Text>
-                <Group justify="space-between">
-                  <Text size="sm">Encaissé ce mois</Text>
-                  <Text fw={700} className="montant">{formatFCFA(m.encaisse_mois)}</Text>
-                </Group>
-                <Text size="sm" c="dimmed">Gestionnaire : {m.gestionnaire_nom ?? 'vous-même'}</Text>
+                {voir('adresse') && <Text c="dimmed" size="sm">{[m.quartier, m.ville].filter(Boolean).join(' · ') || '—'}</Text>}
+                {voir('encaisse') && (
+                  <Group justify="space-between">
+                    <Text size="sm">Encaissé ce mois</Text>
+                    <Text fw={700} className="montant">{formatFCFA(m.encaisse_mois)}</Text>
+                  </Group>
+                )}
+                {voir('gestionnaire') && <Text size="sm" c="dimmed">Gestionnaire : {m.gestionnaire_nom ?? 'vous-même'}</Text>}
               </Stack>
             </Card>
           ))}

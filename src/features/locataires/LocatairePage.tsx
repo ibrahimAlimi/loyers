@@ -28,6 +28,16 @@ import { useRevisionLoyer } from '@/features/baux/api';
 import { MonthPickerInput } from '@mantine/dates';
 import { useLocataire, type BailDetail } from './api';
 import { LocataireForm } from './LocataireForm';
+import { BlocsOrdonnes, BoutonPersonnaliser } from '@/perso/Personnaliser';
+import { useAffichage, type DefBloc } from '@/perso/useAffichage';
+
+const BLOCS: DefBloc[] = [
+  { cle: 'baux', libelle: 'Logement loué et Encaisser', essentiel: true },
+  { cle: 'coordonnees', libelle: 'Coordonnées', mobile: true },
+  { cle: 'paiements', libelle: 'Historique des paiements', mobile: true },
+  { cle: 'caution', libelle: 'Caution', mobile: true },
+  { cle: 'anciens_baux', libelle: 'Anciens baux', mobile: true },
+];
 
 export function LocatairePage() {
   const { id } = useParams();
@@ -41,6 +51,7 @@ export function LocatairePage() {
   const [finBail, setFinBail] = useState<BailDetail | null>(null);
   const [caution, setCaution] = useState<{ bail: BailDetail; sens: 'versement' | 'restitution' } | null>(null);
   const [revision, setRevision] = useState<BailDetail | null>(null);
+  const affichage = useAffichage('locataire', BLOCS);
 
   if (isLoading) return <Skeleton h={300} />;
   if (!data || data.locataire.supprime_le) {
@@ -58,8 +69,9 @@ export function LocatairePage() {
         retour="/locataires"
         titre={nom}
         sousTitre={locataire.profession ?? undefined}
-        actions={
-          gerer && (
+        actions={<>
+          <BoutonPersonnaliser affichage={affichage} />
+          {gerer && (
             <Menu position="bottom-end">
               <Menu.Target><ActionIcon variant="default" size="lg" aria-label="Plus"><IconDots /></ActionIcon></Menu.Target>
               <Menu.Dropdown>
@@ -71,11 +83,13 @@ export function LocatairePage() {
                 </Menu.Item>
               </Menu.Dropdown>
             </Menu>
-          )
-        }
+          )}
+        </>}
       />
 
-      <Stack gap="lg">
+      <BlocsOrdonnes affichage={affichage} rendus={{
+        baux: actifs.length > 0 && (
+        <Stack gap="lg">
         {actifs.map((b) => (
           <Card key={b.id} withBorder radius="lg" padding="lg" style={{ borderColor: 'var(--mantine-color-espace-3)' }}>
             <Group justify="space-between" align="flex-start" mb="sm">
@@ -115,7 +129,9 @@ export function LocatairePage() {
             )}
           </Card>
         ))}
-
+        </Stack>
+        ),
+        coordonnees: (
         <Card withBorder radius="lg" padding="lg">
           <Title order={3} size="h4" mb="sm">Coordonnées</Title>
           <Stack gap={6}>
@@ -132,7 +148,8 @@ export function LocatairePage() {
             </Group>
           )}
         </Card>
-
+        ),
+        paiements: (
         <Card withBorder radius="lg" padding="lg">
           <Title order={3} size="h4" mb="sm">Historique des paiements</Title>
           {!paiements.length && <Text c="dimmed">Aucun paiement enregistré.</Text>}
@@ -162,8 +179,8 @@ export function LocatairePage() {
             ))}
           </Stack>
         </Card>
-
-        {mouvements.length > 0 && (
+        ),
+        caution: mouvements.length > 0 && (
           <Card withBorder radius="lg" padding="lg">
             <Title order={3} size="h4" mb="sm">Caution</Title>
             {mouvements.map((m) => (
@@ -179,9 +196,8 @@ export function LocatairePage() {
               </Group>
             ))}
           </Card>
-        )}
-
-        {baux.some((b) => b.date_fin) && (
+        ),
+        anciens_baux: baux.some((b) => b.date_fin) && (
           <Card withBorder radius="lg" padding="lg">
             <Title order={3} size="h4" mb="sm">Anciens baux</Title>
             {baux.filter((b) => b.date_fin).map((b) => (
@@ -196,8 +212,8 @@ export function LocatairePage() {
               </Group>
             ))}
           </Card>
-        )}
-      </Stack>
+        ),
+      }} />
 
       <LocataireForm opened={edition} onClose={editionForm.close} locataire={locataire} />
       {nouveauBail && <BailForm opened onClose={nouveauBailForm.close} locataireId={locataire.id} />}

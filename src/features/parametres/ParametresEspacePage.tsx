@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import {
-  Alert, Button, Card, ColorInput, Group, Image, NumberInput, SimpleGrid, Stack, Tabs, Text, TextInput, Title,
+  Alert, Button, Card, ColorInput, Group, Image, NumberInput, SimpleGrid, Stack, Tabs, Text, TextInput, Title, UnstyledButton,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { IconEye, IconStar } from '@tabler/icons-react';
+import { IconCheck, IconEye, IconStar } from '@tabler/icons-react';
 import { useMutation } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router';
 import { supabase } from '@/lib/supabase';
@@ -13,13 +13,15 @@ import { notifierErreur, notifierSucces } from '@/lib/erreurs';
 import { aujourdhui, premierDuMois } from '@/lib/dates';
 import { useAuth } from '@/auth/AuthProvider';
 import { useEspace, useEspaceCourant } from '@/espace/EspaceProvider';
-import { COULEURS_PROPOSEES, contrasteAvecBlanc, rendreLisible } from '@/espace/theme';
+import { COULEURS_PROPOSEES, contrasteAvecBlanc, rendreLisible, THEMES } from '@/espace/theme';
 import { PageEntete } from '@/layout/PageEntete';
 import { ImageUpload } from '@/ui/ImageUpload';
 import { SignaturePad } from '@/ui/SignaturePad';
 import type { Recu } from '@/lib/types';
 import { genererCachet } from './cachet';
 import { ReafficherRappel } from './ReafficherRappel';
+import { ApercuApplication } from './ApercuApplication';
+import { IconesMenu } from './IconesMenu';
 
 type Champ = 'logo_path' | 'cachet_path' | 'signature_path';
 const FICHIER: Record<Champ, string> = { logo_path: 'logo.png', cachet_path: 'cachet.png', signature_path: 'signature.png' };
@@ -75,13 +77,32 @@ export function ParametresEspacePage() {
     onError: notifierErreur,
   });
 
+  const [icones, setIcones] = useState<Record<string, string>>(espace.icones_menu ?? {});
+  const logo = useUrlFichier('espaces', espace.logo_path);
+  const apparenceModifiee = form.values.couleur_primaire !== espace.couleur_primaire
+    || JSON.stringify(icones) !== JSON.stringify(espace.icones_menu ?? {});
+  const apparence = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from('espaces')
+        .update({ couleur_primaire: form.values.couleur_primaire, icones_menu: icones }).eq('id', espace.id);
+      if (error) throw error;
+    },
+    onSuccess: async () => {
+      notifierSucces('Apparence enregistrée');
+      await rafraichirDonnees();
+      rafraichir();
+    },
+    onError: notifierErreur,
+  });
+
   const contraste = contrasteAvecBlanc(form.values.couleur_primaire);
   const [apercu, setApercu] = useState(false);
   const voirApercu = async () => {
     setApercu(true);
     try {
       const { genererRecuPdf } = await import('@/features/recus/pdf/genererPdf');
-      const blob = await genererRecuPdf(recuFictif(espace, profil?.nom_complet ?? ''), { duplicata: null });
+      const blob = await genererRecuPdf(recuFictif({ ...espace, nom: form.values.nom || espace.nom, couleur_primaire: form.values.couleur_primaire },
+        profil?.nom_complet ?? ''), { duplicata: null });
       window.open(URL.createObjectURL(blob), '_blank');
     } catch (e) {
       notifierErreur(e);
@@ -122,31 +143,60 @@ export function ParametresEspacePage() {
         </Tabs.Panel>
 
         <Tabs.Panel value="identite">
-          <SimpleGrid cols={{ base: 1, md: 2 }}>
-            <Card withBorder radius="lg" padding="lg">
-              <Title order={3} size="h4" mb="sm">Logo</Title>
-              <ApercuImage chemin={espace.logo_path} />
-              <Group mt="md" gap="xs">
-                <ImageUpload libelle="Envoyer un logo" enCours={fichier.isPending} onValider={(blob) => fichier.mutate({ champ: 'logo_path', blob })} />
-                {espace.logo_path && <Button variant="subtle" color="red" onClick={() => fichier.mutate({ champ: 'logo_path', blob: null })}>Retirer</Button>}
+          <SimpleGrid cols={{ base: 1, lg: 2 }} spacing="lg">
+            <Stack>
+              <Card withBorder radius="lg" padding="lg">
+                <Title order={3} size="h4" mb="sm">Logo</Title>
+                <ApercuImage chemin={espace.logo_path} />
+                <Group mt="md" gap="xs">
+                  <ImageUpload libelle="Envoyer un logo" enCours={fichier.isPending} onValider={(blob) => fichier.mutate({ champ: 'logo_path', blob })} />
+                  {espace.logo_path && <Button variant="subtle" color="red" onClick={() => fichier.mutate({ champ: 'logo_path', blob: null })}>Retirer</Button>}
+                </Group>
+              </Card>
+              <Card withBorder radius="lg" padding="lg">
+                <Title order={3} size="h4" mb={4}>Couleurs</Title>
+                <Text size="sm" c="dimmed" mb="sm">Choisissez un thème, ou votre propre couleur.</Text>
+                <SimpleGrid cols={{ base: 2, xs: 5 }} spacing="xs" mb="md">
+                  {THEMES.map((t) => {
+                    const choisi = form.values.couleur_primaire.toLowerCase() === t.couleur;
+                    return (
+                      <UnstyledButton key={t.couleur} onClick={() => form.setFieldValue('couleur_primaire', t.couleur)}
+                        aria-pressed={choisi}
+                        style={{ border: `2px solid ${choisi ? t.couleur : 'var(--mantine-color-gray-3)'}`, borderRadius: 10, padding: 6 }}>
+                        <div style={{ height: 26, borderRadius: 6, background: t.couleur, display: 'grid', placeItems: 'center' }}>
+                          {choisi && <IconCheck size={16} color="white" />}
+                        </div>
+                        <Text size="xs" ta="center" mt={4} fw={choisi ? 700 : 500}>{t.nom}</Text>
+                      </UnstyledButton>
+                    );
+                  })}
+                </SimpleGrid>
+                <ColorInput label="Couleur personnalisée" format="hex" swatches={COULEURS_PROPOSEES} swatchesPerRow={10} {...form.getInputProps('couleur_primaire')} />
+                {contraste < 4.5 && (
+                  <Alert color="orange" mt="sm">
+                    Cette couleur rend le texte blanc difficile à lire.
+                    <Button size="xs" variant="light" ml="sm" onClick={() => form.setFieldValue('couleur_primaire', rendreLisible(form.values.couleur_primaire))}>
+                      Utiliser une version plus foncée
+                    </Button>
+                  </Alert>
+                )}
+              </Card>
+              <IconesMenu valeur={icones} onChange={setIcones} couleur={form.values.couleur_primaire} />
+              <Group justify="flex-end">
+                <Button size="md" loading={apparence.isPending} disabled={!apparenceModifiee}
+                  onClick={() => apparence.mutate()}>Enregistrer l'apparence</Button>
               </Group>
-            </Card>
-            <Card withBorder radius="lg" padding="lg">
-              <Title order={3} size="h4" mb="sm">Couleur principale</Title>
-              <ColorInput format="hex" swatches={COULEURS_PROPOSEES} swatchesPerRow={10} {...form.getInputProps('couleur_primaire')} />
-              {contraste < 4.5 && (
-                <Alert color="orange" mt="sm">
-                  Cette couleur rend le texte difficile à lire.
-                  <Button size="xs" variant="light" ml="sm" onClick={() => form.setFieldValue('couleur_primaire', rendreLisible(form.values.couleur_primaire))}>
-                    Utiliser une version plus foncée
-                  </Button>
-                </Alert>
-              )}
-              <Group mt="md" gap="xs">
-                <Button style={{ background: form.values.couleur_primaire }}>Exemple de bouton</Button>
-                <Button onClick={() => enregistrer.mutate(form.values)} loading={enregistrer.isPending} variant="default">Enregistrer la couleur</Button>
-              </Group>
-            </Card>
+            </Stack>
+            <div>
+              <Stack style={{ position: 'sticky', top: 76 }}>
+                <Group justify="space-between">
+                  <Title order={3} size="h4">Aperçu en direct</Title>
+                  <Button size="xs" variant="light" leftSection={<IconEye size={16} />} loading={apercu} onClick={voirApercu}>Aperçu du reçu</Button>
+                </Group>
+                <ApercuApplication couleur={form.values.couleur_primaire} nom={form.values.nom} logo={logo} icones={icones} />
+                {apparenceModifiee && <Text size="sm" c="orange.8">Modifications non enregistrées.</Text>}
+              </Stack>
+            </div>
           </SimpleGrid>
         </Tabs.Panel>
 

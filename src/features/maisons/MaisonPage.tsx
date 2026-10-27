@@ -15,6 +15,15 @@ import type { Logement } from '@/lib/types';
 import { useMaison } from './api';
 import { MaisonForm } from './MaisonForm';
 import { LogementForm } from './LogementForm';
+import { BoutonPersonnaliser } from '@/perso/Personnaliser';
+import { useAffichage, type DefColonne } from '@/perso/useAffichage';
+
+const COLONNES: DefColonne[] = [
+  { cle: 'type', libelle: 'Type de logement', mobile: true },
+  { cle: 'niveau', libelle: 'Niveau (étage)' },
+  { cle: 'loyer', libelle: 'Loyer', mobile: true },
+  { cle: 'locataire', libelle: 'Locataire et situation', mobile: true },
+];
 
 export function MaisonPage() {
   const { id } = useParams();
@@ -26,6 +35,8 @@ export function MaisonPage() {
   const [maisonOuverte, maisonForm] = useDisclosure(false);
   const [logementEdite, setLogementEdite] = useState<Logement | 'nouveau' | null>(null);
   const [bailPour, setBailPour] = useState<string | null>(null);
+  const affichage = useAffichage('maison', [], COLONNES);
+  const voir = affichage.colonne;
 
   if (isLoading) return <Skeleton h={300} />;
   if (!data || data.maison.supprime_le) return <EtatVide titre="Maison introuvable" message="Elle a peut-être été mise à la corbeille." />;
@@ -77,6 +88,7 @@ export function MaisonPage() {
         sousTitre={[maison.quartier, maison.ville, maison.repere].filter(Boolean).join(' · ')}
         actions={
           <>
+            <BoutonPersonnaliser affichage={affichage} titreColonnes="Informations affichées sur chaque logement" />
             {gererLogements && (
               <Button leftSection={<IconPlus size={18} />} onClick={() => setLogementEdite('nouveau')}>Ajouter un logement</Button>
             )}
@@ -108,10 +120,10 @@ export function MaisonPage() {
                 <Stack gap={4} style={{ minWidth: 0 }}>
                   <Text fw={700}>{l.designation}</Text>
                   <Text size="sm" c="dimmed">
-                    {LIBELLE_TYPE_LOGEMENT[l.type]}{l.niveau ? ` · ${l.niveau}` : ''}
-                    {` · ${formatFCFA(l.situation?.loyer ?? l.loyer_reference ?? 0)}`}
+                    {[voir('type') && LIBELLE_TYPE_LOGEMENT[l.type], voir('niveau') && l.niveau,
+                      voir('loyer') && formatFCFA(l.situation?.loyer ?? l.loyer_reference ?? 0)].filter(Boolean).join(' · ')}
                   </Text>
-                  {occupant(l)}
+                  {voir('locataire') && occupant(l)}
                 </Stack>
                 {actionsLogement(l)}
               </Group>
@@ -123,18 +135,18 @@ export function MaisonPage() {
           <Table verticalSpacing="sm" horizontalSpacing="md" highlightOnHover>
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>Logement</Table.Th><Table.Th>Type</Table.Th><Table.Th>Niveau</Table.Th>
-                <Table.Th>Loyer</Table.Th><Table.Th>Locataire</Table.Th><Table.Th />
+                <Table.Th>Logement</Table.Th>{voir('type') && <Table.Th>Type</Table.Th>}{voir('niveau') && <Table.Th>Niveau</Table.Th>}
+                {voir('loyer') && <Table.Th>Loyer</Table.Th>}{voir('locataire') && <Table.Th>Locataire</Table.Th>}<Table.Th />
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
               {logements.map((l) => (
                 <Table.Tr key={l.id}>
                   <Table.Td fw={600}>{l.designation}</Table.Td>
-                  <Table.Td>{LIBELLE_TYPE_LOGEMENT[l.type]}</Table.Td>
-                  <Table.Td>{l.niveau ?? '—'}</Table.Td>
-                  <Table.Td className="montant">{formatFCFA(l.situation?.loyer ?? l.loyer_reference ?? 0)}</Table.Td>
-                  <Table.Td>{occupant(l)}</Table.Td>
+                  {voir('type') && <Table.Td>{LIBELLE_TYPE_LOGEMENT[l.type]}</Table.Td>}
+                  {voir('niveau') && <Table.Td>{l.niveau ?? '—'}</Table.Td>}
+                  {voir('loyer') && <Table.Td className="montant">{formatFCFA(l.situation?.loyer ?? l.loyer_reference ?? 0)}</Table.Td>}
+                  {voir('locataire') && <Table.Td>{occupant(l)}</Table.Td>}
                   <Table.Td>{actionsLogement(l)}</Table.Td>
                 </Table.Tr>
               ))}

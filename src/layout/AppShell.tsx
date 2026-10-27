@@ -11,6 +11,7 @@ import { useAuth } from '@/auth/AuthProvider';
 import { ChoixEspacePage, SelecteurEspace } from '@/espace/SelecteurEspace';
 import { useEspace } from '@/espace/EspaceProvider';
 import { peut } from '@/espace/droits';
+import { iconeMenu } from '@/espace/icones';
 import { useEncaisser } from '@/features/encaissement/EncaissementContext';
 import { useUrlFichier } from '@/lib/fichiers';
 import { LIBELLE_ROLE } from '@/lib/format';
@@ -79,12 +80,14 @@ export function AppShell() {
 
   const lien = (n: EntreeNavigation) => {
     const actif = n.chemin === '/' ? lieu.pathname === '/' : !!n.chemin && lieu.pathname.startsWith(n.chemin);
+    const Icone = iconeMenu(n.cle, n.icone, espace?.icones_menu);
     return (
       <NavLink
         key={n.cle}
         label={n.libelle}
         active={actif}
-        leftSection={<n.icone size={22} stroke={1.7} />}
+        leftSection={<Icone size={22} stroke={1.7} />}
+        data-tour={`menu-${n.cle}`}
         rightSection={n.cle === 'demandes' && nbDemandes > 0 ? <Badge size="sm" circle color="red">{nbDemandes}</Badge> : null}
         onClick={() => (n.action === 'encaisser' ? ouvrir() : navigate(n.chemin!))}
         variant="filled"
