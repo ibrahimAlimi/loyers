@@ -14,6 +14,7 @@ import { peut } from '@/espace/droits';
 import { iconeMenu } from '@/espace/icones';
 import { useEncaisser } from '@/features/encaissement/EncaissementContext';
 import { Cloche } from '@/features/notifications/Cloche';
+import { ApprendreProvider } from '@/features/apprendre/ApprendreContext';
 import { useUrlFichier } from '@/lib/fichiers';
 import { LIBELLE_ROLE } from '@/lib/format';
 import { supabase } from '@/lib/supabase';
@@ -70,7 +71,7 @@ export function AppShell() {
 
   const roleEffectif = profil?.est_super_admin ? 'super_admin' : role;
   // Bouton flottant « Encaisser » : seulement sur les pages de travail, pas sur les formulaires de réglages
-  const SANS_BOUTON = ['/parametres', '/profil', '/comptes', '/admin', '/corbeille', '/demandes'];
+  const SANS_BOUTON = ['/parametres', '/profil', '/comptes', '/admin', '/corbeille', '/demandes', '/apprendre'];
   const boutonFlottant = !!mobile && !!espace && peut('encaisser', roleEffectif)
     && !SANS_BOUTON.some((c) => lieu.pathname.startsWith(c));
   const visibles = NAVIGATION.filter((n) => {
@@ -99,6 +100,7 @@ export function AppShell() {
   };
 
   return (
+    <ApprendreProvider>
     <Shell
       header={{ height: 60 }}
       navbar={{ width: 250, breakpoint: 'sm', collapsed: { mobile: !ouvert } }}
@@ -164,5 +166,6 @@ export function AppShell() {
         </Affix>
       )}
     </Shell>
+    </ApprendreProvider>
   );
 }

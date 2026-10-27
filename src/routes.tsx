@@ -19,6 +19,7 @@ import { ParametresEspacePage } from './features/parametres/ParametresEspacePage
 import { ProfilPage } from './features/parametres/ProfilPage';
 import { EspacesPage } from './features/admin/EspacesPage';
 import { AuditPage } from './features/admin/audit/AuditPage';
+import { ApprendrePage } from './features/apprendre/ApprendrePage';
 import { EtatVide } from './ui/EtatVide';
 
 export const router = createBrowserRouter([
@@ -47,6 +48,7 @@ export const router = createBrowserRouter([
           { path: 'admin', element: <EspacesPage /> },
           { path: 'admin/audit', element: <AuditPage /> },
           { path: 'profil', element: <ProfilPage /> },
+          { path: 'apprendre', element: <ApprendrePage /> },
           { path: '*', element: <EtatVide titre="Page introuvable" message="Cette page n'existe pas." /> },
         ],
       },

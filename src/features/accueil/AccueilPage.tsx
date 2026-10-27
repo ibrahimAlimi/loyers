@@ -14,6 +14,7 @@ import { useDerniersRecus, useResume } from '@/features/statistiques/api';
 import { BlocsOrdonnes, BoutonPersonnaliser } from '@/perso/Personnaliser';
 import { useAffichage, type DefBloc, type DefColonne } from '@/perso/useAffichage';
 import { CompleterEspace } from './CompleterEspace';
+import { BoutonAide } from '@/features/apprendre/ApprendreContext';
 
 const BLOCS: DefBloc[] = [
   { cle: 'chiffres', libelle: 'Les chiffres du mois', mobile: true },
@@ -42,11 +43,11 @@ export function AccueilPage() {
   const prenom = profil?.nom_complet.split(' ')[0];
   const affichage = useAffichage('accueil', BLOCS, CHIFFRES);
 
-  const tuiles: { libelle: string; icone: Icon; aller: () => void }[] = [
-    { libelle: 'Locataires', icone: iconeMenu('locataires', IconUsers, icones_menu), aller: () => navigate('/locataires') },
-    { libelle: 'Maisons', icone: iconeMenu('maisons', IconBuildingEstate, icones_menu), aller: () => navigate('/maisons') },
-    { libelle: 'Reçus', icone: iconeMenu('recus', IconReceipt, icones_menu), aller: () => navigate('/recus') },
-    { libelle: 'Statistiques', icone: iconeMenu('statistiques', IconChartBar, icones_menu), aller: () => navigate('/statistiques') },
+  const tuiles: { cle: string; libelle: string; icone: Icon; aller: () => void }[] = [
+    { cle: 'locataires', libelle: 'Locataires', icone: iconeMenu('locataires', IconUsers, icones_menu), aller: () => navigate('/locataires') },
+    { cle: 'maisons', libelle: 'Maisons', icone: iconeMenu('maisons', IconBuildingEstate, icones_menu), aller: () => navigate('/maisons') },
+    { cle: 'recus', libelle: 'Reçus', icone: iconeMenu('recus', IconReceipt, icones_menu), aller: () => navigate('/recus') },
+    { cle: 'statistiques', libelle: 'Statistiques', icone: iconeMenu('statistiques', IconChartBar, icones_menu), aller: () => navigate('/statistiques') },
   ];
 
   return (
@@ -56,7 +57,10 @@ export function AccueilPage() {
           <Title order={1} size="h2">Bonjour {prenom} 👋</Title>
           <Text c="dimmed" tt="capitalize">{formatDateLongue(aujourdhui())}</Text>
         </div>
-        <BoutonPersonnaliser affichage={affichage} titreColonnes="Chiffres affichés" compact />
+        <Group gap="xs">
+          <BoutonPersonnaliser affichage={affichage} titreColonnes="Chiffres affichés" compact />
+          <BoutonAide demo="encaisser" />
+        </Group>
       </Group>
 
       <CompleterEspace />
@@ -86,7 +90,7 @@ export function AccueilPage() {
           </UnstyledButton>
         )}
         {tuiles.map((t) => (
-          <UnstyledButton key={t.libelle} onClick={t.aller}>
+          <UnstyledButton key={t.libelle} onClick={t.aller} data-tour={`tuile-${t.cle}`}>
             <Card withBorder radius="lg" padding="md" h="100%">
               <Stack align="center" gap={4}>
                 <t.icone size={26} color="var(--mantine-color-espace-filled)" />

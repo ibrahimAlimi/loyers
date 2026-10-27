@@ -12,7 +12,8 @@
     "functions:deploy": "supabase functions deploy creer-utilisateur reinitialiser-mdp envoyer-notifications",
     "super-admin": "tsx --env-file=.env.local scripts/creer-super-admin.ts",
     "demo": "tsx --env-file=.env.local scripts/donnees-test.ts",
-    "demo:supprimer": "tsx --env-file=.env.local scripts/donnees-test.ts --supprimer"
+    "demo:supprimer": "tsx --env-file=.env.local scripts/donnees-test.ts --supprimer",
+    "voix": "tsx scripts/voix/index.ts"
   },
   "dependencies": {
     "@mantine/colors-generator": "^8.3.18",

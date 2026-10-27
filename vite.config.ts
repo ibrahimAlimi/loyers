@@ -33,7 +33,12 @@ export default defineConfig({
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/rest\//, /^\/auth\//, /^\/storage\//, /^\/functions\//],
         // Les appels Supabase ne sont jamais mis en cache.
-        runtimeCaching: [{ urlPattern: /supabase\.co/, handler: 'NetworkOnly' }],
+        runtimeCaching: [
+          { urlPattern: /supabase\.co/, handler: 'NetworkOnly' },
+          // Voix off des démos : gardée après la première écoute
+          { urlPattern: /\/voix\/.*\.mp3$/, handler: 'CacheFirst', options: { cacheName: 'voix', expiration: { maxEntries: 200 } } },
+          { urlPattern: /\/voix\/manifest\.json$/, handler: 'StaleWhileRevalidate', options: { cacheName: 'voix-manifeste' } },
+        ],
       },
     }),
   ],
