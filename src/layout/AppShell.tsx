@@ -67,6 +67,10 @@ export function AppShell() {
   if (sansEspace && !['/admin', '/profil'].includes(lieu.pathname)) return <Navigate to="/admin" replace />;
 
   const roleEffectif = profil?.est_super_admin ? 'super_admin' : role;
+  // Bouton flottant « Encaisser » : seulement sur les pages de travail, pas sur les formulaires de réglages
+  const SANS_BOUTON = ['/parametres', '/profil', '/comptes', '/admin', '/corbeille', '/demandes'];
+  const boutonFlottant = !!mobile && !!espace && peut('encaisser', roleEffectif)
+    && !SANS_BOUTON.some((c) => lieu.pathname.startsWith(c));
   const visibles = NAVIGATION.filter((n) => {
     if (sansEspace) return n.cle === 'admin' || n.cle === 'profil';
     if (n.cle === 'demandes') return roleEffectif !== 'consultation';
@@ -140,11 +144,11 @@ export function AppShell() {
         </Shell.Section>
       </Shell.Navbar>
 
-      <Shell.Main>
+      <Shell.Main pb={boutonFlottant ? 96 : undefined}>
         <Outlet />
       </Shell.Main>
 
-      {mobile && espace && peut('encaisser', roleEffectif) && (
+      {boutonFlottant && (
         <Affix position={{ bottom: 20, right: 16 }}>
           <Button radius="xl" size="md" leftSection={<IconCash size={20} />} onClick={() => ouvrir()} style={{ boxShadow: '0 6px 18px rgba(0,0,0,.25)' }}>
             Encaisser

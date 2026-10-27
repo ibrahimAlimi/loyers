@@ -10,6 +10,7 @@ import { useEncaisser } from '@/features/encaissement/EncaissementContext';
 import { useBauxEncaissables } from '@/features/encaissement/api';
 import { CarteChiffre } from '@/features/statistiques/CarteChiffre';
 import { useDerniersRecus, useResume } from '@/features/statistiques/api';
+import { CompleterEspace } from './CompleterEspace';
 
 export function AccueilPage() {
   const { profil } = useAuth();
@@ -37,6 +38,8 @@ export function AccueilPage() {
         <Title order={1} size="h2">Bonjour {prenom} 👋</Title>
         <Text c="dimmed" tt="capitalize">{formatDateLongue(aujourdhui())}</Text>
       </div>
+
+      <CompleterEspace />
 
       <SimpleGrid cols={{ base: 2, md: 4 }} spacing="sm">
         <CarteChiffre chargement={isLoading} libelle={`Encaissé en ${mois}`} valeur={formatFCFA(r?.encaisse)} couleur="espace" />

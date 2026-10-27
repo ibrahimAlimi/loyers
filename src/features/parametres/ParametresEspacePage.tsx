@@ -5,6 +5,7 @@ import {
 import { useForm } from '@mantine/form';
 import { IconEye, IconStar } from '@tabler/icons-react';
 import { useMutation } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router';
 import { supabase } from '@/lib/supabase';
 import { rafraichirDonnees } from '@/lib/queryClient';
 import { envoyerFichier, useUrlFichier } from '@/lib/fichiers';
@@ -26,6 +27,7 @@ export function ParametresEspacePage() {
   const espace = useEspaceCourant();
   const { rafraichir } = useEspace();
   const { profil } = useAuth();
+  const [params] = useSearchParams();
   const form = useForm({
     initialValues: {
       nom: espace.nom,
@@ -91,7 +93,7 @@ export function ParametresEspacePage() {
     <>
       <PageEntete titre="Paramètres de l'espace" sousTitre={`Préfixe des reçus : ${espace.prefixe_recu}`}
         actions={<Button variant="light" leftSection={<IconEye size={18} />} loading={apercu} onClick={voirApercu}>Aperçu du reçu</Button>} />
-      <Tabs defaultValue="infos" keepMounted={false}>
+      <Tabs defaultValue={params.get('onglet') ?? 'infos'} keepMounted={false}>
         <Tabs.List mb="md">
           <Tabs.Tab value="infos">Informations</Tabs.Tab>
           <Tabs.Tab value="identite">Logo et couleur</Tabs.Tab>
