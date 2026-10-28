@@ -108,20 +108,26 @@ if (logements.some((l) => l.maison === A_CLASSER)) maisons.push({ cle: A_CLASSER
 const logementParCle = new Map(logements.map((l) => [l.cle, l]));
 
 // ---------- Locataires ----------
+// Un locataire sans nom dans Access devient un locataire par contrat, nommé « Maison-Logement-Locataire à renommer »,
+// pour ne pas regrouper sous un même nom des baux qui n'ont rien à voir.
 const A_RENOMMER = 'Locataire à renommer';
-const locataires = LOCATAIRE.map((l) => ({
-  cle: l.CodeLocataire,
-  nom: l.Identite || A_RENOMMER,
-  notes: [
+const notesLocataire = (l: Ligne) => [
     l.Profession && `Profession : ${l.Profession}`, l.Service && `Service : ${l.Service}`, l.Contacts && `Contacts : ${l.Contacts}`,
     l.Mail && `E-mail : ${l.Mail}`, l.Marié === 'true' && 'Marié(e)', entier(l.NbEnfants) > 0 && `${l.NbEnfants} enfant(s)`, l.Details,
-  ].filter(Boolean).join(' · '),
-}));
-const locataireParCle = new Map(locataires.map((l) => [l.cle, l]));
-const sansNom = CONTRAT.filter((c) => locataireParCle.get(c.CodeLocataire)?.nom === A_RENOMMER);
-if (sansNom.length) {
-  aFaire.push(`Un locataire n'avait pas de nom dans Access : il s'appelle « ${A_RENOMMER} » et porte ${sansNom.length} bail(s). Renommez-le : ses anciens reçus seront mis à jour.`);
+  ].filter(Boolean).join(' · ');
+const locataires = LOCATAIRE.filter((l) => l.Identite).map((l) => ({ cle: l.CodeLocataire, nom: l.Identite, notes: notesLocataire(l) }));
+const cleLocataire = new Map(CONTRAT.map((c) => [c.NumContrat, c.CodeLocataire]));
+for (const c of CONTRAT) {
+  const l = LOCATAIRE.find((x) => x.CodeLocataire === c.CodeLocataire);
+  const log = logementParCle.get(c.CodeAppart);
+  if (!l || l.Identite || !log) continue;
+  const cle = `${c.CodeLocataire}-${c.NumContrat}`;
+  const nom = `${log.maison === A_CLASSER ? 'À classer' : log.maison}-${log.designation}-${A_RENOMMER}`;
+  locataires.push({ cle, nom, notes: notesLocataire(l) });
+  cleLocataire.set(c.NumContrat, cle);
+  aFaire.push(`Le locataire du contrat Access n° ${c.NumContrat} n'avait pas de nom : il s'appelle « ${nom} ». Renommez-le : ses anciens reçus seront mis à jour.`);
 }
+const locataireParCle = new Map(locataires.map((l) => [l.cle, l]));
 
 // ---------- Baux, révisions et paiements ----------
 interface Paiement { bail: string; date: string; montant: number; mois: string; payeur: string; a_verifier: string[]; reprise: Record<string, unknown>; ordre: number }
@@ -132,7 +138,7 @@ const logementsOccupes = new Map<string, string>();
 
 for (const c of CONTRAT) {
   const log = logementParCle.get(c.CodeAppart);
-  const loc = locataireParCle.get(c.CodeLocataire);
+  const loc = locataireParCle.get(cleLocataire.get(c.NumContrat) ?? '');
   if (!log || !loc) {
     ignores.push(`Contrat n° ${c.NumContrat} : ${!log ? 'logement' : 'locataire'} introuvable.`);
     continue;
