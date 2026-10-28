@@ -8,6 +8,7 @@ import { notifierErreur, notifierSucces } from '@/lib/erreurs';
 import { PageEntete } from '@/layout/PageEntete';
 import { EtatVide } from '@/ui/EtatVide';
 import { useMaisons } from '@/features/maisons/api';
+import { useEspaceCourant } from '@/espace/EspaceProvider';
 import { useMembres, useModifierMembre, useReinitialiserMdp, type Membre } from './api';
 import { UtilisateurForm } from './UtilisateurForm';
 
@@ -16,6 +17,8 @@ export function UtilisateursPage() {
   const [ouvert, { open, close }] = useDisclosure(false);
   const modifier = useModifierMembre();
   const reinit = useReinitialiserMdp();
+  // Le mot de passe d'un propriétaire ne peut être réinitialisé que par l'administrateur
+  const superAdmin = useEspaceCourant().role === 'super_admin';
   const [mdp, setMdp] = useState<{ nom: string; mdp: string } | null>(null);
   const [maisonsDe, setMaisonsDe] = useState<Membre | null>(null);
 
@@ -54,6 +57,11 @@ export function UtilisateursPage() {
                     </Text>
                   )}
                 </div>
+                {m.role === 'proprietaire' && superAdmin && (
+                  <Button size="xs" variant="light" leftSection={<IconKey size={16} />} loading={reinit.isPending} onClick={() => reinitialiser(m)}>
+                    Réinitialiser le mot de passe
+                  </Button>
+                )}
                 {m.role !== 'proprietaire' && (
                   <Menu position="bottom-end">
                     <Menu.Target><ActionIcon variant="subtle" size="lg" aria-label="Actions"><IconDots /></ActionIcon></Menu.Target>

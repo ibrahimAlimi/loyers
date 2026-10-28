@@ -422,3 +422,7 @@ verify_jwt = false
 # Formulaire public « Demander un accès » (protégé par CAPTCHA et limite par adresse IP).
 [functions.demande-acces]
 verify_jwt = false
+
+# « Mot de passe oublié » (public, protégé par CAPTCHA et limite par adresse IP et par compte).
+[functions.mot-de-passe-oublie]
+verify_jwt = false

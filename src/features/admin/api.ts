@@ -8,6 +8,7 @@ export interface EspaceAdmin extends Espace {
   nb_logements: number;
   nb_membres: number;
   proprietaire: string | null;
+  proprietaire_id: string | null;
 }
 
 export function useEspacesAdmin() {
@@ -17,15 +18,16 @@ export function useEspacesAdmin() {
       const [espaces, logements, membres] = await Promise.all([
         supabase.from('espaces').select('*').is('supprime_le', null).order('nom'),
         supabase.from('logements').select('espace_id').is('supprime_le', null),
-        supabase.from('membres').select('espace_id, role, profil:profils(nom_complet)').eq('actif', true),
+        supabase.from('membres').select('espace_id, role, user_id, profil:profils(nom_complet)').eq('actif', true),
       ]);
       if (espaces.error) throw espaces.error;
-      const ms = (membres.data ?? []) as unknown as { espace_id: string; role: string; profil: { nom_complet: string } }[];
+      const ms = (membres.data ?? []) as unknown as { espace_id: string; role: string; user_id: string; profil: { nom_complet: string } }[];
       return (espaces.data as Espace[]).map((e) => ({
         ...e,
         nb_logements: (logements.data ?? []).filter((l) => l.espace_id === e.id).length,
         nb_membres: ms.filter((m) => m.espace_id === e.id).length,
         proprietaire: ms.find((m) => m.espace_id === e.id && m.role === 'proprietaire')?.profil.nom_complet ?? null,
+        proprietaire_id: ms.find((m) => m.espace_id === e.id && m.role === 'proprietaire')?.user_id ?? null,
       }));
     },
   });

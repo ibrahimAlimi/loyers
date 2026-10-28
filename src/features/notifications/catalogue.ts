@@ -26,7 +26,7 @@ export const CATALOGUE: TypeNotification[] = [
   { type: 'modification', libelle: 'Ajout ou modification d’une maison, d’un logement, d’un locataire ou d’un bail', roles: ['proprietaire', 'gestionnaire'], defaut: ['app'] },
   { type: 'corbeille', libelle: 'Mise à la corbeille et restauration', roles: ['proprietaire', 'super_admin'], defaut: ['app'] },
   { type: 'duplicata', libelle: 'Reçu réimprimé (duplicata)', roles: ['proprietaire'], defaut: ['app', 'push'] },
-  { type: 'compte', libelle: 'Comptes, droits et maisons confiées', roles: ['proprietaire', 'gestionnaire', 'consultation'], defaut: ['app', 'push'] },
+  { type: 'compte', libelle: 'Comptes, droits et maisons confiées', roles: ['proprietaire', 'gestionnaire', 'consultation', 'super_admin'], defaut: ['app', 'push'] },
   { type: 'securite', libelle: 'Mot de passe modifié, connexion inhabituelle', roles: ['proprietaire', 'gestionnaire', 'consultation', 'super_admin'], defaut: TOUS },
   { type: 'resume_mensuel', libelle: 'Résumé du mois (encaissé, impayés, occupation)', roles: ['proprietaire', 'consultation'], defaut: ['app', 'email'] },
   { type: 'limite_formule', libelle: 'Limite de la formule atteinte', roles: ['proprietaire', 'super_admin'], defaut: TOUS },

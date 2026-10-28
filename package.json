@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "types:db": "supabase gen types typescript --linked > src/lib/database.generated.ts",
     "db:push": "supabase db push",
-    "functions:deploy": "supabase functions deploy creer-utilisateur reinitialiser-mdp envoyer-notifications demande-acces repondre-demande-acces",
+    "functions:deploy": "supabase functions deploy creer-utilisateur reinitialiser-mdp envoyer-notifications demande-acces repondre-demande-acces mot-de-passe-oublie",
     "super-admin": "tsx --env-file=.env.local scripts/creer-super-admin.ts",
     "demo": "tsx --env-file=.env.local scripts/donnees-test.ts",
     "demo:supprimer": "tsx --env-file=.env.local scripts/donnees-test.ts --supprimer",

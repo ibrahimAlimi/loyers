@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Badge, Button, Card, Group, Modal, NumberInput, Select, Skeleton, Stack, Switch, Text } from '@mantine/core';
+import { Badge, Button, Card, CopyButton, Group, Modal, NumberInput, Select, Skeleton, Stack, Switch, Text } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { IconDoorEnter, IconPlus, IconSettings } from '@tabler/icons-react';
+import { IconDoorEnter, IconKey, IconPlus, IconSettings } from '@tabler/icons-react';
 import { useNavigate } from 'react-router';
 import { useEspace } from '@/espace/EspaceProvider';
 import { notifierErreur, notifierSucces } from '@/lib/erreurs';
@@ -12,6 +12,8 @@ import { EspaceForm } from './EspaceForm';
 import { DemandesAcces, UtilisationPlateforme } from './DemandesAcces';
 import { useUtilisation } from './api';
 import { formatDateHeure } from '@/lib/format';
+import { motDePasseProvisoire } from '@/lib/fonctions';
+import { useReinitialiserMdp } from '@/features/utilisateurs/api';
 
 const FORMULES = [
   { value: 'decouverte', label: 'Découverte (3 logements, gratuit)', max: 3 },
@@ -27,6 +29,18 @@ export function EspacesPage() {
   const [edition, setEdition] = useState<EspaceAdmin | null>(null);
   const navigate = useNavigate();
   const { data: utilisation } = useUtilisation();
+  const reinit = useReinitialiserMdp();
+  const [mdp, setMdp] = useState<{ nom: string; mdp: string } | null>(null);
+
+  const reinitialiser = async (e: EspaceAdmin) => {
+    const nouveau = motDePasseProvisoire();
+    try {
+      await reinit.mutateAsync({ user_id: e.proprietaire_id!, nouveau_mot_de_passe: nouveau });
+      setMdp({ nom: e.proprietaire ?? e.nom, mdp: nouveau });
+    } catch (err) {
+      notifierErreur(err);
+    }
+  };
 
   return (
     <>
@@ -60,6 +74,12 @@ export function EspacesPage() {
                     Entrer dans cet espace
                   </Button>
                   <Button variant="default" leftSection={<IconSettings size={18} />} onClick={() => setEdition(e)}>Formule</Button>
+                  {e.proprietaire_id && (
+                    <Button variant="default" leftSection={<IconKey size={18} />} loading={reinit.isPending && reinit.variables?.user_id === e.proprietaire_id}
+                      onClick={() => reinitialiser(e)}>
+                      Mot de passe
+                    </Button>
+                  )}
                 </Group>
               </Group>
             </Card>
@@ -68,6 +88,19 @@ export function EspacesPage() {
       )}
       <EspaceForm opened={ouvert} onClose={close} />
       {edition && <FormuleDialog espace={edition} onClose={() => setEdition(null)} />}
+      <Modal opened={!!mdp} onClose={() => setMdp(null)} title="Nouveau mot de passe provisoire">
+        <Stack>
+          <Text>Pour <b>{mdp?.nom}</b> : <b style={{ fontFamily: 'monospace', fontSize: 18 }}>{mdp?.mdp}</b></Text>
+          <Text size="sm" c="dimmed">
+            Il devra le changer à sa prochaine connexion. Sa double authentification, s'il l'avait activée, est retirée.
+            Ce mot de passe ne sera plus affiché.
+          </Text>
+          <Group justify="flex-end">
+            <CopyButton value={mdp?.mdp ?? ''}>{({ copied, copy }) => <Button variant="light" onClick={copy}>{copied ? 'Copié !' : 'Copier'}</Button>}</CopyButton>
+            <Button onClick={() => setMdp(null)}>Fermer</Button>
+          </Group>
+        </Stack>
+      </Modal>
     </>
   );
 }
