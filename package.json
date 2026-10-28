@@ -13,6 +13,7 @@
     "super-admin": "tsx --env-file=.env.local scripts/creer-super-admin.ts",
     "demo": "tsx --env-file=.env.local scripts/donnees-test.ts",
     "demo:supprimer": "tsx --env-file=.env.local scripts/donnees-test.ts --supprimer",
+    "reprise": "tsx --env-file=.env.local scripts/reprise/index.ts",
     "voix": "tsx scripts/voix/index.ts",
     "video": "tsx scripts/video.ts"
   },

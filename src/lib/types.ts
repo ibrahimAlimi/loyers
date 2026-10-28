@@ -135,9 +135,26 @@ export interface ContenuRecu {
   date_paiement: string;
   loyer_mensuel: number;
   encaissant: { id: string; nom: string; role: string; signature_path: string | null };
-  situation: { paye_jusqua: string | null; nb_mois_dus: number; montant_du: number };
+  /** Absente sur un reçu repris de l'ancien logiciel. */
+  situation: { paye_jusqua: string | null; nb_mois_dus: number; montant_du: number } | null;
   caution: { mouvement: 'versement' | 'remboursement' | 'retenue'; motif: string | null; solde: number } | null;
+  /** Reçu repris de l'ancien logiciel (série R). */
+  repris?: boolean;
   emis_le: string;
+}
+
+/** Étiquettes posées par la reprise Access sur un paiement à vérifier. */
+export type EtiquetteReprise = 'doublon' | 'montant' | 'date';
+
+/** Origine d'un paiement repris de l'ancien logiciel. */
+export interface RepriseAccess {
+  source: 'access';
+  numero_access: number;
+  mois_access: string;
+  date_access: string | null;
+  encaisseur: string | null;
+  verifie_le?: string;
+  mois_corrige_le?: string;
 }
 
 export interface Recu {

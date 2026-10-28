@@ -21,6 +21,7 @@ import { useSupprimer } from '@/ui/ConfirmationSuppression';
 import { useEncaisser } from '@/features/encaissement/EncaissementContext';
 import { ActionsRecu } from '@/features/recus/ActionsRecu';
 import { ActionsPaiement } from '@/features/demandes/ActionsPaiement';
+import { EtiquettesReprise } from '@/features/reprise/Etiquettes';
 import { BailForm } from '@/features/baux/BailForm';
 import { FinBailDialog } from '@/features/baux/FinBailDialog';
 import { CautionDialog } from '@/features/baux/CautionDialog';
@@ -169,9 +170,11 @@ export function LocatairePage() {
                       {p.mois.map((m) => formatMois(m)).join(', ') || '—'}
                     </Text>
                     <Text size="sm" c="dimmed">
-                      {formatDate(p.date_paiement)} · {LIBELLE_MODE[p.mode]} · par {p.encaisse_par_nom}
+                      {formatDate(p.date_paiement)} · {LIBELLE_MODE[p.mode]} · par {p.reprise?.encaisseur ?? p.encaisse_par_nom}
                       {p.payeur !== nom ? ` · payé par ${p.payeur}` : ''}
+                      {p.reprise ? ' · ancien logiciel' : ''}
                     </Text>
+                    {p.statut === 'valide' && <EtiquettesReprise etiquettes={p.a_verifier} />}
                     {p.statut === 'annule' && <Badge color="red" variant="light" size="sm">Annulé : {p.motif_annulation}</Badge>}
                     {p.remise > 0 && <Text size="xs" c="dimmed">Remise accordée : {formatFCFA(p.remise)}</Text>}
                   </Stack>

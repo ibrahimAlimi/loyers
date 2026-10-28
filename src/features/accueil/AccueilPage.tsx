@@ -14,6 +14,7 @@ import { useDerniersRecus, useResume } from '@/features/statistiques/api';
 import { BlocsOrdonnes, BoutonPersonnaliser } from '@/perso/Personnaliser';
 import { useAffichage, type DefBloc, type DefColonne } from '@/perso/useAffichage';
 import { CompleterEspace } from './CompleterEspace';
+import { EncartAVerifier } from '@/features/reprise/EncartAVerifier';
 import { BoutonAide } from '@/features/apprendre/ApprendreContext';
 
 const BLOCS: DefBloc[] = [
@@ -63,6 +64,7 @@ export function AccueilPage() {
         </Group>
       </Group>
 
+      <EncartAVerifier />
       <CompleterEspace />
 
       <BlocsOrdonnes affichage={affichage} demi={['non_recus', 'derniers_recus']} rendus={{

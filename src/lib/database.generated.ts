@@ -39,6 +39,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      abonnements_push: {
+        Row: {
+          appareil: string | null
+          auth: string
+          cree_le: string
+          endpoint: string
+          id: string
+          p256dh: string
+          user_id: string
+        }
+        Insert: {
+          appareil?: string | null
+          auth: string
+          cree_le?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          user_id?: string
+        }
+        Update: {
+          appareil?: string | null
+          auth?: string
+          cree_le?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "abonnements_push_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       baux: {
         Row: {
           actif: boolean | null
@@ -238,6 +276,72 @@ export type Database = {
           },
         ]
       }
+      demandes_acces: {
+        Row: {
+          cree_le: string
+          email: string | null
+          espace_id: string | null
+          id: string
+          ip: unknown
+          message: string | null
+          nb_logements: number | null
+          nom: string
+          reponse: string | null
+          statut: Database["public"]["Enums"]["statut_demande"]
+          telephone: string
+          traite_le: string | null
+          traite_par: string | null
+          ville: string | null
+        }
+        Insert: {
+          cree_le?: string
+          email?: string | null
+          espace_id?: string | null
+          id?: string
+          ip?: unknown
+          message?: string | null
+          nb_logements?: number | null
+          nom: string
+          reponse?: string | null
+          statut?: Database["public"]["Enums"]["statut_demande"]
+          telephone: string
+          traite_le?: string | null
+          traite_par?: string | null
+          ville?: string | null
+        }
+        Update: {
+          cree_le?: string
+          email?: string | null
+          espace_id?: string | null
+          id?: string
+          ip?: unknown
+          message?: string | null
+          nb_logements?: number | null
+          nom?: string
+          reponse?: string | null
+          statut?: Database["public"]["Enums"]["statut_demande"]
+          telephone?: string
+          traite_le?: string | null
+          traite_par?: string | null
+          ville?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demandes_acces_espace_id_fkey"
+            columns: ["espace_id"]
+            isOneToOne: false
+            referencedRelation: "espaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "demandes_acces_traite_par_fkey"
+            columns: ["traite_par"]
+            isOneToOne: false
+            referencedRelation: "profils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       espaces: {
         Row: {
           actif: boolean
@@ -249,6 +353,7 @@ export type Database = {
           delai_retard_jours: number
           email: string | null
           formule: Database["public"]["Enums"]["formule"]
+          icones_menu: Json
           id: string
           limites_actives: boolean
           logo_path: string | null
@@ -274,6 +379,7 @@ export type Database = {
           delai_retard_jours?: number
           email?: string | null
           formule?: Database["public"]["Enums"]["formule"]
+          icones_menu?: Json
           id?: string
           limites_actives?: boolean
           logo_path?: string | null
@@ -299,6 +405,7 @@ export type Database = {
           delai_retard_jours?: number
           email?: string | null
           formule?: Database["public"]["Enums"]["formule"]
+          icones_menu?: Json
           id?: string
           limites_actives?: boolean
           logo_path?: string | null
@@ -318,11 +425,13 @@ export type Database = {
       }
       historique_modifications: {
         Row: {
+          appareil: string | null
           apres: Json | null
           avant: Json | null
           champs_modifies: string[] | null
           espace_id: string | null
           id: number
+          ip: unknown
           le: string
           ligne_id: string
           operation: string
@@ -330,11 +439,13 @@ export type Database = {
           table_nom: string
         }
         Insert: {
+          appareil?: string | null
           apres?: Json | null
           avant?: Json | null
           champs_modifies?: string[] | null
           espace_id?: string | null
           id?: number
+          ip?: unknown
           le?: string
           ligne_id: string
           operation: string
@@ -342,18 +453,28 @@ export type Database = {
           table_nom: string
         }
         Update: {
+          appareil?: string | null
           apres?: Json | null
           avant?: Json | null
           champs_modifies?: string[] | null
           espace_id?: string | null
           id?: number
+          ip?: unknown
           le?: string
           ligne_id?: string
           operation?: string
           par?: string | null
           table_nom?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "historique_modifications_par_fkey"
+            columns: ["par"]
+            isOneToOne: false
+            referencedRelation: "profils"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       imputations: {
         Row: {
@@ -428,6 +549,65 @@ export type Database = {
             columns: ["paiement_id"]
             isOneToOne: false
             referencedRelation: "paiements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      journal_audit: {
+        Row: {
+          action: string
+          appareil: string | null
+          cible_id: string | null
+          cible_table: string | null
+          details: Json | null
+          espace_id: string | null
+          id: number
+          identifiant: string | null
+          ip: unknown
+          le: string
+          libelle: string | null
+          navigateur: string | null
+          reussi: boolean
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          appareil?: string | null
+          cible_id?: string | null
+          cible_table?: string | null
+          details?: Json | null
+          espace_id?: string | null
+          id?: number
+          identifiant?: string | null
+          ip?: unknown
+          le?: string
+          libelle?: string | null
+          navigateur?: string | null
+          reussi?: boolean
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          appareil?: string | null
+          cible_id?: string | null
+          cible_table?: string | null
+          details?: Json | null
+          espace_id?: string | null
+          id?: number
+          identifiant?: string | null
+          ip?: unknown
+          le?: string
+          libelle?: string | null
+          navigateur?: string | null
+          reussi?: boolean
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "journal_audit_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profils"
             referencedColumns: ["id"]
           },
         ]
@@ -848,8 +1028,75 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          canaux: string[]
+          cree_le: string
+          email_statut: string | null
+          espace_id: string | null
+          id: string
+          lien: string | null
+          lu_le: string | null
+          message: string | null
+          par: string | null
+          push_statut: string | null
+          tentatives: number
+          titre: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          canaux?: string[]
+          cree_le?: string
+          email_statut?: string | null
+          espace_id?: string | null
+          id?: string
+          lien?: string | null
+          lu_le?: string | null
+          message?: string | null
+          par?: string | null
+          push_statut?: string | null
+          tentatives?: number
+          titre: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          canaux?: string[]
+          cree_le?: string
+          email_statut?: string | null
+          espace_id?: string | null
+          id?: string
+          lien?: string | null
+          lu_le?: string | null
+          message?: string | null
+          par?: string | null
+          push_statut?: string | null
+          tentatives?: number
+          titre?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_espace_id_fkey"
+            columns: ["espace_id"]
+            isOneToOne: false
+            referencedRelation: "espaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       paiements: {
         Row: {
+          a_verifier: string[]
           annule_le: string | null
           annule_par: string | null
           bail_id: string
@@ -870,11 +1117,13 @@ export type Database = {
           reference_transaction: string | null
           remise: number
           remplace_paiement_id: string | null
+          reprise: Json | null
           statut: Database["public"]["Enums"]["statut_paiement"]
           supprime_le: string | null
           supprime_par: string | null
         }
         Insert: {
+          a_verifier?: string[]
           annule_le?: string | null
           annule_par?: string | null
           bail_id: string
@@ -895,11 +1144,13 @@ export type Database = {
           reference_transaction?: string | null
           remise?: number
           remplace_paiement_id?: string | null
+          reprise?: Json | null
           statut?: Database["public"]["Enums"]["statut_paiement"]
           supprime_le?: string | null
           supprime_par?: string | null
         }
         Update: {
+          a_verifier?: string[]
           annule_le?: string | null
           annule_par?: string | null
           bail_id?: string
@@ -920,6 +1171,7 @@ export type Database = {
           reference_transaction?: string | null
           remise?: number
           remplace_paiement_id?: string | null
+          reprise?: Json | null
           statut?: Database["public"]["Enums"]["statut_paiement"]
           supprime_le?: string | null
           supprime_par?: string | null
@@ -1301,10 +1553,30 @@ export type Database = {
         Args: { p_id: string; p_table: string }
         Returns: Json
       }
+      appareil_de: { Args: { p_ua: string }; Returns: string }
+      auditer: {
+        Args: {
+          p_action: string
+          p_cible_id?: string
+          p_cible_table?: string
+          p_details?: Json
+          p_espace?: string
+          p_identifiant?: string
+          p_libelle?: string
+          p_reussi?: boolean
+          p_user?: string
+        }
+        Returns: undefined
+      }
       aujourdhui: { Args: never; Returns: string }
       bail_du_recu: {
         Args: { p_mouvement: string; p_paiement: string }
         Returns: string
+      }
+      canaux_par_defaut: { Args: { p_type: string }; Returns: string[] }
+      changer_mois_paiement_repris: {
+        Args: { p_mois: string; p_paiement: string }
+        Returns: undefined
       }
       collecter_cascade: {
         Args: { p_id: string; p_table: string }
@@ -1313,6 +1585,7 @@ export type Database = {
           tbl: string
         }[]
       }
+      consultations_de: { Args: { p_espace: string }; Returns: string[] }
       corriger_paiement: { Args: { p_paiement: string }; Returns: undefined }
       echeances_bail: {
         Args: { p_bail: string; p_jusqua?: string }
@@ -1401,6 +1674,27 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      enregistrer_abonnement_push: {
+        Args: {
+          p_appareil: string
+          p_auth: string
+          p_endpoint: string
+          p_p256dh: string
+        }
+        Returns: undefined
+      }
+      enregistrer_demande_acces: {
+        Args: {
+          p_email: string
+          p_ip: unknown
+          p_message: string
+          p_nb_logements: number
+          p_nom: string
+          p_telephone: string
+          p_ville: string
+        }
+        Returns: string
+      }
       enregistrer_mouvement_caution: {
         Args: {
           p_bail: string
@@ -1439,24 +1733,68 @@ export type Database = {
         }
       }
       espace_de: { Args: { p_id: string; p_table: string }; Returns: string }
+      espace_public: { Args: { p_cle: string }; Returns: Json }
       est_appel_technique: { Args: never; Returns: boolean }
       est_super_admin: { Args: never; Returns: boolean }
+      fcfa: { Args: { p_montant: number }; Returns: string }
       generation_recu: { Args: { p_recu: string }; Returns: Json }
+      gestionnaire_de: { Args: { p_maison: string }; Returns: string[] }
       identifiant_pour_email: { Args: { p_email: string }; Returns: string }
+      importer_reprise: {
+        Args: { p_donnees: Json; p_espace: string }
+        Returns: Json
+      }
       initiales: { Args: { p_nom: string }; Returns: string }
+      journaliser: {
+        Args: {
+          p_action: string
+          p_cible_id?: string
+          p_cible_table?: string
+          p_details?: Json
+          p_espace?: string
+          p_libelle?: string
+        }
+        Returns: undefined
+      }
+      journaliser_echec_connexion: {
+        Args: { p_identifiant: string }
+        Returns: undefined
+      }
       libelle_de: { Args: { p_id: string; p_table: string }; Returns: string }
+      logement_occupe: {
+        Args: { p_date: string; p_logement: string }
+        Returns: boolean
+      }
       loyer_du_mois: {
         Args: { p_bail: string; p_mois: string }
         Returns: number
       }
       maison_du_bail: { Args: { p_bail: string }; Returns: string }
       maison_du_logement: { Args: { p_logement: string }; Returns: string }
+      marquer_notifications_lues: {
+        Args: { p_ids?: string[] }
+        Returns: undefined
+      }
       mettre_a_la_corbeille: {
         Args: { p_id: string; p_table: string }
         Returns: string
       }
       mfa_respectee: { Args: never; Returns: boolean }
       niveau_session: { Args: never; Returns: string }
+      nom_de: { Args: { p_user: string }; Returns: string }
+      nom_mois: { Args: { p_annee?: boolean; p_date: string }; Returns: string }
+      notifier: {
+        Args: {
+          p_auteur_inclus?: boolean
+          p_espace: string
+          p_lien?: string
+          p_message?: string
+          p_titre: string
+          p_type: string
+          p_users: string[]
+        }
+        Returns: undefined
+      }
       peut_gerer_espace: { Args: { p_espace: string }; Returns: boolean }
       peut_gerer_maison: { Args: { p_maison: string }; Returns: boolean }
       peut_modifier_locataire: {
@@ -1464,17 +1802,74 @@ export type Database = {
         Returns: boolean
       }
       peut_voir_locataire: { Args: { p_locataire: string }; Returns: boolean }
+      peut_voir_locataire_ligne: {
+        Args: { p_espace: string; p_locataire: string }
+        Returns: boolean
+      }
       peut_voir_maison: { Args: { p_maison: string }; Returns: boolean }
+      peut_voir_maison_ligne: {
+        Args: { p_espace: string; p_gestionnaire: string; p_maison: string }
+        Returns: boolean
+      }
+      proprietaires_de: { Args: { p_espace: string }; Returns: string[] }
+      purger_audit: {
+        Args: { p_avant?: string; p_ids?: number[] }
+        Returns: number
+      }
       purger_historique: {
         Args: { p_avant?: string; p_ids?: number[] }
         Returns: number
       }
+      requete_entetes: { Args: never; Returns: Json }
+      requete_ip: { Args: never; Returns: unknown }
       restaurer: { Args: { p_lot: string }; Returns: undefined }
       role_dans: {
         Args: { p_espace: string }
         Returns: Database["public"]["Enums"]["role_membre"]
       }
       situation_caution: { Args: { p_bail: string }; Returns: number }
+      stats_baux: {
+        Args: { p_espace: string; p_filtres?: Json }
+        Returns: {
+          date_debut: string
+          date_fin: string
+          gestionnaire_id: string
+          id: string
+          jour_echeance: number
+          locataire: string
+          locataire_id: string
+          logement: string
+          logement_id: string
+          loyer: number
+          maison: string
+          maison_id: string
+          telephone: string
+          type: Database["public"]["Enums"]["type_logement"]
+        }[]
+      }
+      stats_completes: {
+        Args: {
+          p_complet?: boolean
+          p_debut: string
+          p_espace: string
+          p_filtres?: Json
+          p_fin: string
+        }
+        Returns: Json
+      }
+      stats_logements: {
+        Args: { p_espace: string; p_filtres?: Json }
+        Returns: {
+          cree_le: string
+          designation: string
+          gestionnaire_id: string
+          id: string
+          loyer_reference: number
+          maison: string
+          maison_id: string
+          type: Database["public"]["Enums"]["type_logement"]
+        }[]
+      }
       stats_par_mois: {
         Args: {
           p_debut: string
@@ -1497,16 +1892,33 @@ export type Database = {
         }
         Returns: Json
       }
+      super_admins: { Args: never; Returns: string[] }
       supprimer_definitivement: {
         Args: { p_id: string; p_table: string }
         Returns: string[]
       }
       tables_corbeille: { Args: never; Returns: string[] }
+      taches_quotidiennes: { Args: never; Returns: undefined }
+      taille_journaux: { Args: never; Returns: Json }
       traiter_demande: {
         Args: { p_accepter: boolean; p_demande: string; p_reponse?: string }
         Returns: undefined
       }
+      traiter_demande_acces: {
+        Args: {
+          p_accepter: boolean
+          p_espace?: string
+          p_id: string
+          p_reponse?: string
+        }
+        Returns: undefined
+      }
+      utilisation_plateforme: { Args: never; Returns: Json }
       uuid_ou_null: { Args: { p: string }; Returns: string }
+      valider_paiement_repris: {
+        Args: { p_paiement: string }
+        Returns: undefined
+      }
       verifier_droit_suppression: {
         Args: { p_id: string; p_table: string }
         Returns: string

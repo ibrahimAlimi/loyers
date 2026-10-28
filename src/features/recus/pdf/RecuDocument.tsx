@@ -66,7 +66,7 @@ export function RecuDocument({ c, images, options }: { c: ContenuRecu; images: I
           <View style={{ alignItems: 'flex-end' }}>
             <Text style={s.petitTitre}>REÇU N°</Text>
             <Text style={s.numero}>{c.numero}</Text>
-            <Text style={s.coord}>Émis le {dayjs(c.emis_le).format('DD/MM/YYYY à HH:mm')}</Text>
+            <Text style={s.coord}>Émis le {dayjs(c.emis_le).format(c.repris ? 'DD/MM/YYYY' : 'DD/MM/YYYY à HH:mm')}</Text>
           </View>
         </View>
 
@@ -122,7 +122,11 @@ export function RecuDocument({ c, images, options }: { c: ContenuRecu; images: I
             <Text style={s.remise}>Remise accordée : {fcfa(c.remise)}{c.motif_remise ? ` (${c.motif_remise})` : ''}</Text>
           )}
 
-          {c.type === 'loyer' ? (
+          {c.repris || !c.situation ? (
+            <View style={s.situation}>
+              <Text>Reçu repris de l'ancien logiciel de gestion des loyers.</Text>
+            </View>
+          ) : c.type === 'loyer' ? (
             <View style={s.situation}>
               <Text>
                 Situation après ce paiement : loyers payés jusqu'à {c.situation.paye_jusqua ? mois(c.situation.paye_jusqua).toLowerCase() : '—'}.

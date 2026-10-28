@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ActionIcon, Button, Group, Menu, Modal, Stack, Text, Textarea } from '@mantine/core';
-import { IconBan, IconDots, IconPencil, IconTrash } from '@tabler/icons-react';
+import { IconBan, IconCalendarEvent, IconCircleCheck, IconDots, IconPencil, IconTrash } from '@tabler/icons-react';
 import { supabase } from '@/lib/supabase';
 import { rafraichirDonnees } from '@/lib/queryClient';
 import { notifierErreur, notifierSucces } from '@/lib/erreurs';
@@ -9,14 +9,18 @@ import { useEspaceCourant } from '@/espace/EspaceProvider';
 import { peut } from '@/espace/droits';
 import { useSupprimer } from '@/ui/ConfirmationSuppression';
 import { useEncaisser } from '@/features/encaissement/EncaissementContext';
+import { ChangerMoisDialog } from '@/features/reprise/ChangerMoisDialog';
+import { useValiderPaiementRepris } from '@/features/reprise/api';
 import type { PaiementDetail } from '@/features/locataires/api';
 
-/** Menu d'un paiement : annuler (ou demander), corriger, corbeille. */
+/** Menu d'un paiement : annuler (ou demander), corriger, corbeille ; changer le mois ou valider un paiement repris. */
 export function ActionsPaiement({ paiement }: { paiement: PaiementDetail }) {
   const espace = useEspaceCourant();
   const supprimer = useSupprimer();
   const { ouvrir } = useEncaisser();
   const [annulation, setAnnulation] = useState(false);
+  const [changerMois, setChangerMois] = useState(false);
+  const valider = useValiderPaiementRepris();
   const proprio = peut('supprimer', espace.role);
   const gestionnaire = peut('demander', espace.role);
   if (!proprio && !gestionnaire) return null;
@@ -43,6 +47,15 @@ export function ActionsPaiement({ paiement }: { paiement: PaiementDetail }) {
           <ActionIcon variant="subtle" size="lg" aria-label="Actions du paiement"><IconDots size={20} /></ActionIcon>
         </Menu.Target>
         <Menu.Dropdown>
+          {proprio && paiement.reprise && paiement.mois.length === 1 && (
+            <Menu.Item leftSection={<IconCalendarEvent size={16} />} onClick={() => setChangerMois(true)}>Changer le mois</Menu.Item>
+          )}
+          {proprio && paiement.reprise && paiement.a_verifier.length > 0 && (
+            <Menu.Item leftSection={<IconCircleCheck size={16} />} color="teal"
+              onClick={() => valider.mutate(paiement.id, { onSuccess: () => notifierSucces('Paiement vérifié'), onError: notifierErreur })}>
+              C'est correct
+            </Menu.Item>
+          )}
           {proprio && <Menu.Item leftSection={<IconPencil size={16} />} onClick={corriger}>Corriger (annule et ressaisit)</Menu.Item>}
           <Menu.Item leftSection={<IconBan size={16} />} color="orange" onClick={() => setAnnulation(true)}>
             {proprio ? 'Annuler ce paiement' : "Demander l'annulation"}
@@ -56,12 +69,13 @@ export function ActionsPaiement({ paiement }: { paiement: PaiementDetail }) {
         </Menu.Dropdown>
       </Menu>
       {annulation && <AnnulationDialog paiement={paiement} demande={!proprio} espaceId={espace.id} libelle={libelle} onClose={() => setAnnulation(false)} />}
+      {changerMois && <ChangerMoisDialog paiement={paiement} onClose={() => setChangerMois(false)} />}
     </>
   );
 }
 
-function AnnulationDialog({ paiement, demande, espaceId, libelle, onClose }: {
-  paiement: PaiementDetail; demande: boolean; espaceId: string; libelle: string; onClose: () => void;
+export function AnnulationDialog({ paiement, demande, espaceId, libelle, onClose }: {
+  paiement: { id: string }; demande: boolean; espaceId: string; libelle: string; onClose: () => void;
 }) {
   const [motif, setMotif] = useState('');
   const [envoi, setEnvoi] = useState(false);

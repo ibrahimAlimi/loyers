@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { rafraichirDonnees } from '@/lib/queryClient';
 import { useEspaceCourant } from '@/espace/EspaceProvider';
 import { nomComplet } from '@/lib/format';
-import type { Bail, Locataire, ModePaiement, Recu, SituationBail } from '@/lib/types';
+import type { Bail, EtiquetteReprise, Locataire, ModePaiement, Recu, RepriseAccess, SituationBail } from '@/lib/types';
 
 export interface LigneLocataire {
   locataire: Locataire;
@@ -66,6 +66,9 @@ export interface PaiementDetail {
   encaisse_par_nom: string;
   mois: string[];
   recu: Recu | null;
+  /** Paiement repris de l'ancien logiciel (null = saisi dans l'application). */
+  reprise: RepriseAccess | null;
+  a_verifier: EtiquetteReprise[];
 }
 
 export interface MouvementCaution {
@@ -129,6 +132,8 @@ export function useLocataire(id: string | undefined) {
             .map((i) => i.mois)
             .sort(),
           recu: premier(p.recus as Recu | Recu[] | null),
+          reprise: p.reprise as RepriseAccess | null,
+          a_verifier: (p.a_verifier ?? []) as EtiquetteReprise[],
         })),
         mouvements: (mouvements.data ?? []).map((m): MouvementCaution => ({ ...m, recu: premier(m.recus as Recu | Recu[] | null) })),
       };

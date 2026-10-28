@@ -4,7 +4,7 @@ import { notifierErreur, notifierSucces } from '@/lib/erreurs';
 import { LIBELLE_TYPE_LOGEMENT } from '@/lib/format';
 import type { Logement, TypeLogement } from '@/lib/types';
 import { MontantInput } from '@/ui/MontantInput';
-import { useEnregistrerLogement } from './api';
+import { useEnregistrerLogement, useMaisons } from './api';
 
 const TYPES = Object.entries(LIBELLE_TYPE_LOGEMENT).map(([value, label]) => ({ value, label }));
 
@@ -16,8 +16,11 @@ export function LogementForm({ opened, onClose, maisonId, espaceId, logement }: 
   logement?: Logement;
 }) {
   const enregistrer = useEnregistrerLogement();
+  // Changer de maison : seulement pour un logement existant (ex. logement « À classer » après la reprise)
+  const maisons = useMaisons();
   const form = useForm({
     initialValues: {
+      maison_id: maisonId,
       type: (logement?.type ?? 'chambre') as TypeLogement,
       designation: logement?.designation ?? '',
       niveau: logement?.niveau ?? '',
@@ -31,8 +34,8 @@ export function LogementForm({ opened, onClose, maisonId, espaceId, logement }: 
 
   const valider = form.onSubmit(async (v) => {
     try {
-      await enregistrer.mutateAsync({ ...v, id: logement?.id, maison_id: maisonId, espace_id: espaceId });
-      notifierSucces(logement ? 'Logement modifié' : 'Logement ajouté');
+      await enregistrer.mutateAsync({ ...v, id: logement?.id, espace_id: espaceId });
+      notifierSucces(v.maison_id !== maisonId ? 'Logement déplacé dans une autre maison' : logement ? 'Logement modifié' : 'Logement ajouté');
       onClose();
     } catch (e) {
       notifierErreur(e);
@@ -43,6 +46,10 @@ export function LogementForm({ opened, onClose, maisonId, espaceId, logement }: 
     <Modal opened={opened} onClose={onClose} title={logement ? 'Modifier le logement' : 'Ajouter un logement'} size="lg">
       <form onSubmit={valider}>
         <Stack>
+          {logement && (maisons.data?.length ?? 0) > 1 && (
+            <Select label="Maison" data={(maisons.data ?? []).map((m) => ({ value: m.id, label: m.nom }))} allowDeselect={false}
+              description="Pour déplacer ce logement dans une autre maison." {...form.getInputProps('maison_id')} />
+          )}
           <Select label="Type" data={TYPES} allowDeselect={false} {...form.getInputProps('type')} />
           <TextInput label="Désignation" placeholder="Ex. En bas à droite N°2" data-autofocus {...form.getInputProps('designation')} />
           <TextInput label="Niveau / précisions" placeholder="Ex. Rez-de-chaussée, 1er étage" {...form.getInputProps('niveau')} />

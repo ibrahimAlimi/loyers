@@ -46,6 +46,7 @@ const CHAMPS: Record<string, string> = {
   nb_duplicatas: 'Duplicatas', original_genere: 'Original imprimé', est_super_admin: 'Super admin',
   doit_changer_mdp: 'Doit changer son mot de passe', formule: 'Formule', limites_actives: 'Limites actives',
   max_logements: 'Logements maximum', mois_effet: 'À partir de', mois: 'Mois',
+  a_verifier: 'À vérifier', reprise: 'Reprise de l’ancien logiciel',
 };
 
 export const libelleChamp = (c: string) => CHAMPS[c] ?? c;

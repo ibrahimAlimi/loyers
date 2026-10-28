@@ -20,6 +20,7 @@ import { ProfilPage } from './features/parametres/ProfilPage';
 import { EspacesPage } from './features/admin/EspacesPage';
 import { AuditPage } from './features/admin/audit/AuditPage';
 import { ApprendrePage } from './features/apprendre/ApprendrePage';
+import { AVerifierPage } from './features/reprise/AVerifierPage';
 import { VitrinePage } from './features/vitrine/VitrinePage';
 import { DemandeAccesPage } from './features/vitrine/DemandeAccesPage';
 import { InstallerPage } from './features/vitrine/InstallerPage';
@@ -53,6 +54,7 @@ export const router = createBrowserRouter([
           { path: 'recus', element: <RecusPage /> },
           { path: 'statistiques', element: <StatistiquesPage /> },
           { path: 'demandes', element: <DemandesPage /> },
+          { path: 'a-verifier', element: <AVerifierPage /> },
           { path: 'comptes', element: <UtilisateursPage /> },
           { path: 'parametres', element: <ParametresEspacePage /> },
           { path: 'corbeille', element: <CorbeillePage /> },
