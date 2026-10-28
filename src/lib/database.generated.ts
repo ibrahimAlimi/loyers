@@ -1586,6 +1586,15 @@ export type Database = {
         }[]
       }
       consultations_de: { Args: { p_espace: string }; Returns: string[] }
+      contenu_recu: {
+        Args: {
+          p_mouvement: string
+          p_numero: string
+          p_paiement: string
+          p_type: Database["public"]["Enums"]["type_recu"]
+        }
+        Returns: Json
+      }
       corriger_paiement: { Args: { p_paiement: string }; Returns: undefined }
       echeances_bail: {
         Args: { p_bail: string; p_jusqua?: string }
@@ -1820,6 +1829,10 @@ export type Database = {
         Args: { p_avant?: string; p_ids?: number[] }
         Returns: number
       }
+      recalculer_recu_repris: {
+        Args: { p_paiement: string }
+        Returns: undefined
+      }
       requete_entetes: { Args: never; Returns: Json }
       requete_ip: { Args: never; Returns: unknown }
       restaurer: { Args: { p_lot: string }; Returns: undefined }
@@ -1922,6 +1935,42 @@ export type Database = {
       verifier_droit_suppression: {
         Args: { p_id: string; p_table: string }
         Returns: string
+      }
+      verifier_paiement_repris: {
+        Args: { p_paiement: string }
+        Returns: {
+          a_verifier: string[]
+          annule_le: string | null
+          annule_par: string | null
+          bail_id: string
+          cle_idempotence: string
+          cree_le: string
+          cree_par: string | null
+          date_paiement: string
+          encaisse_par: string
+          espace_id: string
+          id: string
+          lot_suppression: string | null
+          mode: Database["public"]["Enums"]["mode_paiement"]
+          modifie_le: string | null
+          montant: number
+          motif_annulation: string | null
+          motif_remise: string | null
+          payeur: string
+          reference_transaction: string | null
+          remise: number
+          remplace_paiement_id: string | null
+          reprise: Json | null
+          statut: Database["public"]["Enums"]["statut_paiement"]
+          supprime_le: string | null
+          supprime_par: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "paiements"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       verifier_recu: { Args: { p_code: string }; Returns: Json }
     }
