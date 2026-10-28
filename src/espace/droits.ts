@@ -11,6 +11,8 @@ export type Action =
   | 'parametres_espace'
   | 'traiter_demandes'
   | 'voir_corbeille'
+  | 'voir_demandes'
+  | 'verifier_reprise'
   | 'admin';
 
 // Matrice du §4 de la spec. Sert uniquement à afficher / masquer : la sécurité est assurée par la RLS.
@@ -25,6 +27,8 @@ const MATRICE: Record<Action, Role[]> = {
   parametres_espace: ['super_admin', 'proprietaire'],
   traiter_demandes: ['super_admin', 'proprietaire'],
   voir_corbeille: ['super_admin', 'proprietaire'],
+  voir_demandes: ['super_admin', 'proprietaire', 'gestionnaire'],
+  verifier_reprise: ['super_admin', 'proprietaire'],
   admin: ['super_admin'],
 };
 

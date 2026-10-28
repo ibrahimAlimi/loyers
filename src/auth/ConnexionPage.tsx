@@ -6,6 +6,7 @@ import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile';
 import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from './AuthProvider';
+import { ACCES_REFUSE } from './RequireDroit';
 
 const CLE_TURNSTILE = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined;
 const CLE_ESPACE = 'mes-loyers:espace-connexion';
@@ -81,6 +82,9 @@ export function ConnexionPage() {
         <Paper withBorder radius="lg" p="lg" shadow="sm">
           <form onSubmit={valider}>
             <Stack>
+              {(lieu.state as Record<string, unknown> | null)?.[ACCES_REFUSE] === true && !erreur && (
+                <Alert color="orange">Cette page n'est pas accessible avec votre compte : vous avez été déconnecté par sécurité.</Alert>
+              )}
               {erreur && <Alert color="red">{erreur}</Alert>}
               <TextInput
                 label="Identifiant ou e-mail"
@@ -113,8 +117,8 @@ export function ConnexionPage() {
             </Stack>
           </form>
         </Paper>
-        <Text size="sm" c="dimmed" ta="center" mt="md">
-          Mot de passe oublié ? Contactez votre propriétaire ou l'administrateur.
+        <Text size="sm" ta="center" mt="md">
+          <Anchor component={Link} to="/mot-de-passe-oublie">Mot de passe oublié ?</Anchor>
         </Text>
         <Group justify="center" gap="lg" mt="sm">
           <Anchor component={Link} to="/bienvenue" size="sm">Découvrir Mes Loyers</Anchor>

@@ -76,7 +76,6 @@ export function AppShell() {
     && !SANS_BOUTON.some((c) => lieu.pathname.startsWith(c));
   const visibles = NAVIGATION.filter((n) => {
     if (sansEspace) return ['admin', 'audit', 'profil'].includes(n.cle);
-    if (n.cle === 'demandes') return roleEffectif !== 'consultation';
     return !n.droit || peut(n.droit, roleEffectif);
   });
 

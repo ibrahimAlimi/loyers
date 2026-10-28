@@ -23,7 +23,7 @@ export const NAVIGATION: EntreeNavigation[] = [
   { cle: 'maisons', libelle: 'Maisons', chemin: '/maisons', icone: IconBuildingEstate },
   { cle: 'recus', libelle: 'Reçus', chemin: '/recus', icone: IconReceipt },
   { cle: 'statistiques', libelle: 'Statistiques', chemin: '/statistiques', icone: IconChartBar },
-  { cle: 'demandes', libelle: 'Demandes', chemin: '/demandes', icone: IconInbox },
+  { cle: 'demandes', libelle: 'Demandes', chemin: '/demandes', icone: IconInbox, droit: 'voir_demandes' },
   { cle: 'comptes', libelle: 'Comptes', chemin: '/comptes', icone: IconUsersGroup, droit: 'gerer_comptes', bas: true },
   { cle: 'parametres', libelle: 'Paramètres', chemin: '/parametres', icone: IconSettings, droit: 'parametres_espace', bas: true },
   { cle: 'corbeille', libelle: 'Corbeille', chemin: '/corbeille', icone: IconTrash, droit: 'voir_corbeille', bas: true },

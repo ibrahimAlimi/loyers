@@ -1,6 +1,9 @@
 import { createBrowserRouter } from 'react-router';
 import { RequireAuth } from './auth/RequireAuth';
+import { RequireDroit } from './auth/RequireDroit';
 import { ConnexionPage } from './auth/ConnexionPage';
+import { MotDePasseOubliePage } from './auth/MotDePasseOubliePage';
+import { NouveauMotDePassePage } from './auth/NouveauMotDePassePage';
 import { ChangerMotDePassePage } from './auth/ChangerMotDePassePage';
 import { ActivationDoubleAuthPage, SaisieCodePage } from './auth/DoubleAuthPage';
 import { AppShell } from './layout/AppShell';
@@ -31,6 +34,8 @@ import { EtatVide } from './ui/EtatVide';
 export const router = createBrowserRouter([
   { path: '/connexion', element: <ConnexionPage /> },
   { path: '/e/:cle', element: <ConnexionPage /> },
+  { path: '/mot-de-passe-oublie', element: <MotDePasseOubliePage /> },
+  { path: '/nouveau-mot-de-passe', element: <NouveauMotDePassePage /> },
   { path: '/bienvenue', element: <VitrinePage /> },
   { path: '/demande-acces', element: <DemandeAccesPage /> },
   { path: '/installer', element: <InstallerPage /> },
@@ -53,13 +58,13 @@ export const router = createBrowserRouter([
           { path: 'maisons/:id', element: <MaisonPage /> },
           { path: 'recus', element: <RecusPage /> },
           { path: 'statistiques', element: <StatistiquesPage /> },
-          { path: 'demandes', element: <DemandesPage /> },
-          { path: 'a-verifier', element: <AVerifierPage /> },
-          { path: 'comptes', element: <UtilisateursPage /> },
-          { path: 'parametres', element: <ParametresEspacePage /> },
-          { path: 'corbeille', element: <CorbeillePage /> },
-          { path: 'admin', element: <EspacesPage /> },
-          { path: 'admin/audit', element: <AuditPage /> },
+          { path: 'demandes', element: <RequireDroit droit="voir_demandes"><DemandesPage /></RequireDroit> },
+          { path: 'a-verifier', element: <RequireDroit droit="verifier_reprise"><AVerifierPage /></RequireDroit> },
+          { path: 'comptes', element: <RequireDroit droit="gerer_comptes"><UtilisateursPage /></RequireDroit> },
+          { path: 'parametres', element: <RequireDroit droit="parametres_espace"><ParametresEspacePage /></RequireDroit> },
+          { path: 'corbeille', element: <RequireDroit droit="voir_corbeille"><CorbeillePage /></RequireDroit> },
+          { path: 'admin', element: <RequireDroit droit="admin"><EspacesPage /></RequireDroit> },
+          { path: 'admin/audit', element: <RequireDroit droit="admin"><AuditPage /></RequireDroit> },
           { path: 'profil', element: <ProfilPage /> },
           { path: 'apprendre', element: <ApprendrePage /> },
           { path: '*', element: <EtatVide titre="Page introuvable" message="Cette page n'existe pas." /> },
