@@ -83,7 +83,8 @@ export function EnrolementTotp({ onTermine }: { onTermine: () => void | Promise<
       }
       const { data, error } = await supabase.auth.mfa.enroll({
         factorType: 'totp',
-        friendlyName: `Mes Loyers ${new Date().toISOString().slice(0, 10)}`,
+        // Nom unique : deux tentatives le même jour (ou un double montage) ne doivent pas entrer en conflit
+        friendlyName: `Mes Loyers ${new Date().toISOString().slice(0, 10)} ${crypto.randomUUID().slice(0, 6)}`,
       });
       if (annule) return;
       if (error) setErreur(messageErreur(error));
