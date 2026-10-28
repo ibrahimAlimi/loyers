@@ -478,7 +478,7 @@ export const DEMOS: Demo[] = [
       android: () => (
         <Stack h="100%" gap={0} bg="white">
           <Group h={44} px="sm" justify="space-between" bg="gray.1">
-            <Text size="xs" c="dimmed">loyers.pages.dev</Text>
+            <Text size="xs" c="dimmed">loyers-5wk.pages.dev</Text>
             <IconDots data-demo="points" size={22} />
           </Group>
           <Card withBorder shadow="md" radius="md" p={4} ml="auto" mr="xs" mt={4} w={230}>
@@ -491,7 +491,7 @@ export const DEMOS: Demo[] = [
       ),
       iphone: () => (
         <Stack h="100%" gap={0} bg="white" justify="space-between">
-          <Group h={44} px="sm" justify="center" bg="gray.1"><Text size="xs" c="dimmed">loyers.pages.dev</Text></Group>
+          <Group h={44} px="sm" justify="center" bg="gray.1"><Text size="xs" c="dimmed">loyers-5wk.pages.dev</Text></Group>
           <Card withBorder radius="md" m="xs">
             <Bouton id="ecran-accueil" variant="subtle" icone={IconPlus}>Sur l’écran d’accueil</Bouton>
           </Card>
