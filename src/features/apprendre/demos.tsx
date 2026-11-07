@@ -1,8 +1,8 @@
 import {
   IconAlertTriangle, IconArrowDown, IconArrowUp, IconBrandWhatsapp, IconBuildingEstate, IconCash, IconChartBar,
-  IconCheck, IconDeviceMobile, IconDots, IconDownload, IconFileTypePdf, IconHome, IconPhoto, IconPlus, IconPrinter,
+  IconCheck, IconDeviceMobile, IconDots, IconDownload, IconHome, IconPhoto, IconPlus, IconPrinter,
   IconReceipt, IconRestore, IconSchool, IconSettings, IconShare, IconSignature, IconTrash, IconUserPlus, IconUsers,
-  IconUsersGroup, IconPencil, IconArrowUpRight,
+  IconUsersGroup, IconPencil, IconArrowUpRight, IconBan, IconCalendarEvent, IconCircleCheck, IconKey,
 } from '@tabler/icons-react';
 import { Button, Switch } from '@mantine/core';
 import type { Demo } from './LecteurDemo';
@@ -58,50 +58,43 @@ export const DEMOS: Demo[] = [
       accueil: () => accueil,
       choix: () => (
         <Ecran titre="Encaisser · 1/4">
-          <Text fw={700}>Quel locataire ?</Text>
-          <Ligne id="locataire" titre="Koffi Houngbo" sous="Résidence Arouna · En bas à droite N°2" droite={<Retard mois={2} />} />
+          <Text fw={700}>Qui vous paie ?</Text>
+          <Ligne id="locataire" titre="Koffi Houngbo" sous="Résidence Arouna · En bas à droite N°2" droite={<Retard mois={1} />} />
           <Ligne titre="Awa Sanni" sous="Résidence Arouna · Chambre 4" droite={<Retard mois={1} />} />
           <Ligne titre="Jean Dossou" sous="Villa Gbégamey · Boutique" droite={<Retard mois={0} />} />
         </Ecran>
       ),
-      montant: (e) => (
+      mois: () => (
         <Ecran titre="Encaisser · 2/4">
-          <Text fw={700}>Koffi Houngbo doit 140 000 FCFA (2 mois)</Text>
-          <Champ id="montant" label="Montant reçu (FCFA)" valeur={String(e.montant ?? '')} />
-          <Group gap={6}><Badge size="lg" variant="light">Septembre 2026</Badge><Badge size="lg" variant="outline" color="gray">Octobre 2026</Badge></Group>
+          <Text fw={700}>Koffi paie quel mois ?</Text>
+          <Text size="sm" c="dimmed">Dernier mois payé : <b>octobre 2026</b> · Loyer : <b>70 000 FCFA</b></Text>
+          <Card data-demo="mois" withBorder radius="md" padding="xs" style={{ borderColor: 'var(--mantine-color-espace-filled)', borderWidth: 2 }}>
+            <Group justify="space-between"><Text fw={600} size="sm">Novembre 2026</Text><Text fw={700} size="sm">70 000 FCFA ✓</Text></Group>
+          </Card>
+          <Card withBorder radius="md" padding="xs">
+            <Group justify="space-between"><Text fw={600} size="sm">Novembre + Décembre 2026</Text><Text fw={700} size="sm">140 000 FCFA</Text></Group>
+          </Card>
+          <Bouton id="autre" variant="subtle">Autre…</Bouton>
         </Ecran>
       ),
-      mode: (e) => (
+      montant: (e) => (
         <Ecran titre="Encaisser · 3/4">
-          <Text fw={700}>Comment a-t-il payé ?</Text>
+          <Champ id="montant" label="Montant reçu (FCFA)" valeur="70 000" />
           <SimpleGrid cols={2} spacing="xs">
             {[['especes', 'Espèces'], ['mtn', 'MTN Mobile Money'], ['moov', 'Moov Money'], ['celtiis', 'Celtiis Cash']].map(([id, l]) => (
               <Bouton key={id} id={id} variant={e.mode === id ? 'filled' : 'default'}>{l}</Bouton>
             ))}
           </SimpleGrid>
-          {e.mode === 'mtn' && <Champ label="Référence de la transaction (facultatif)" valeur="MP261005.1042.A77" />}
-        </Ecran>
-      ),
-      resume: () => (
-        <Ecran titre="Encaisser · 4/4">
-          <Card withBorder radius="md">
-            <Stack gap={4}>
-              <Text size="sm">Locataire : <b>Koffi Houngbo</b></Text>
-              <Text size="sm">Montant : <b>70 000 FCFA</b></Text>
-              <Text size="sm">Mois payé : <b>Septembre 2026</b></Text>
-              <Text size="sm">Mode : <b>MTN Mobile Money</b></Text>
-              <Text size="sm" c="orange.8">Il restera 70 000 FCFA (octobre).</Text>
-            </Stack>
-          </Card>
-          <Bouton id="valider" plein icone={IconCheck}>Valider l’encaissement</Bouton>
+          <Champ id="date" label="Date du paiement" valeur={(e.date as string | undefined) ?? '07/11/2026'} indice="JJ/MM/AAAA" />
+          <Bouton id="valider" plein icone={IconCheck}>Enregistrer et faire le reçu</Bouton>
         </Ecran>
       ),
       recu: () => (
-        <Ecran titre="Reçu prêt">
+        <Ecran titre="Encaisser · 4/4">
           <Stack align="center" gap="xs" mt="md">
             <Text size="40px">✅</Text>
             <Text fw={800}>Reçu N° DEM-2026-000124</Text>
-            <Text size="sm" c="dimmed">70 000 FCFA · Septembre 2026</Text>
+            <Text size="sm" c="dimmed">70 000 FCFA · Novembre 2026</Text>
           </Stack>
           <Bouton id="envoyer" couleur="green" plein icone={IconBrandWhatsapp}>Envoyer sur WhatsApp</Bouton>
           <Bouton variant="default" plein icone={IconPrinter}>Imprimer</Bouton>
@@ -111,29 +104,118 @@ export const DEMOS: Demo[] = [
     etapes: [
       { scene: 'accueil', doigt: 'encaisser', geste: 'toucher' },
       { scene: 'choix', doigt: 'locataire', geste: 'toucher' },
-      { scene: 'montant', doigt: 'montant', geste: 'montrer', etat: { montant: '70 000' } },
-      { scene: 'mode', doigt: 'mtn', geste: 'toucher', etat: { mode: 'mtn' } },
-      { scene: 'resume', doigt: 'valider', geste: 'toucher' },
+      { scene: 'mois', doigt: 'mois', geste: 'montrer' },
+      { scene: 'montant', doigt: 'montant', geste: 'montrer' },
+      { scene: 'montant', doigt: 'mtn', geste: 'toucher', etat: { mode: 'mtn' } },
+      { scene: 'montant', doigt: 'date', geste: 'montrer', etat: { mode: 'mtn', date: '05/11/2026' } },
+      { scene: 'montant', doigt: 'valider', geste: 'toucher', etat: { mode: 'mtn', date: '05/11/2026' } },
       { scene: 'recu', doigt: 'envoyer', geste: 'montrer' },
     ],
   },
   {
-    id: 'recu_whatsapp', titre: 'Envoyer un reçu sur WhatsApp', description: 'Image ou PDF, avec un message déjà écrit.', icone: IconBrandWhatsapp, personnaliser: true,
+    id: 'modifier_paiement', titre: 'Modifier un paiement', description: 'Corriger un montant, un mois ou une date (propriétaire).', icone: IconPencil,
+    scenes: {
+      fiche: () => (
+        <Ecran titre="Koffi Houngbo" retour>
+          <Text fw={700} size="sm">Paiements</Text>
+          <Ligne titre="70 000 FCFA · Novembre 2026" sous="Payé le 07/11/2026 · MTN Mobile Money"
+            droite={<Bouton id="points" variant="subtle" icone={IconDots}>{''}</Bouton>} />
+          <Ligne titre="70 000 FCFA · Octobre 2026" sous="Payé le 04/10/2026 · Espèces" />
+        </Ecran>
+      ),
+      menu: () => (
+        <Ecran titre="Koffi Houngbo" retour>
+          <Ligne titre="70 000 FCFA · Novembre 2026" sous="Payé le 07/11/2026 · MTN Mobile Money" />
+          <Card withBorder shadow="md" radius="md" p={4} ml="auto" w={230}>
+            <Stack gap={2}>
+              <Bouton id="modifier" variant="subtle" icone={IconPencil}>Modifier ce paiement</Bouton>
+              <Bouton variant="subtle" couleur="orange" icone={IconBan}>Annuler ce paiement</Bouton>
+              <Bouton variant="subtle" couleur="red" icone={IconTrash}>Mettre à la corbeille</Bouton>
+            </Stack>
+          </Card>
+        </Ecran>
+      ),
+      formulaire: (e) => (
+        <Ecran titre="Modification · 3/4">
+          <Champ id="montant" label="Montant reçu (FCFA)" valeur={(e.montant as string | undefined) ?? '70 000'} />
+          <Champ id="date" label="Date du paiement" valeur={(e.date as string | undefined) ?? '07/11/2026'} />
+          <Card data-demo="avertissement" withBorder radius="md" bg="orange.0" padding="xs">
+            <Text size="sm">L’ancien paiement sera annulé (son reçu portera la mention ANNULÉ) et remplacé par celui-ci, avec un nouveau reçu.</Text>
+          </Card>
+          <Bouton id="valider" plein icone={IconCheck}>Enregistrer et faire le reçu</Bouton>
+        </Ecran>
+      ),
+      recu: () => (
+        <Ecran titre="Paiement modifié">
+          <Stack data-demo="nouveau" align="center" gap="xs" mt="md">
+            <Text size="40px">✅</Text>
+            <Text fw={800}>Nouveau reçu N° DEM-2026-000131</Text>
+            <Text size="sm" c="dimmed">75 000 FCFA · Novembre 2026</Text>
+            <Badge color="red" variant="light">Ancien reçu DEM-2026-000124 : ANNULÉ</Badge>
+          </Stack>
+        </Ecran>
+      ),
+    },
+    etapes: [
+      { scene: 'fiche', doigt: 'points', geste: 'toucher' },
+      { scene: 'menu', doigt: 'modifier', geste: 'toucher' },
+      { scene: 'formulaire', doigt: 'montant', geste: 'montrer', etat: { montant: '75 000' } },
+      { scene: 'formulaire', doigt: 'date', geste: 'montrer', etat: { montant: '75 000', date: '06/11/2026' } },
+      { scene: 'formulaire', doigt: 'avertissement', geste: 'montrer', etat: { montant: '75 000', date: '06/11/2026' } },
+      { scene: 'formulaire', doigt: 'valider', geste: 'toucher', etat: { montant: '75 000', date: '06/11/2026' } },
+      { scene: 'recu', doigt: 'nouveau', geste: 'montrer' },
+    ],
+  },
+  {
+    id: 'recu_whatsapp', titre: 'Envoyer un reçu sur WhatsApp', description: 'Enregistré dans le téléphone, puis envoyé au contact de votre choix.', icone: IconBrandWhatsapp, personnaliser: true,
     scenes: {
       accueil: () => accueil,
       liste: (e) => listeRecus(e.recherche as string | undefined),
       format: () => (
-        <Ecran titre="Envoyer le reçu">
-          <Text fw={700}>Sous quelle forme ?</Text>
-          <Bouton id="image" plein icone={IconPhoto}>En image (conseillé sur téléphone)</Bouton>
-          <Bouton variant="default" plein icone={IconFileTypePdf}>En PDF</Bouton>
+        <Ecran titre="Reçus">
+          <Ligne titre="Koffi Houngbo" sous="DEM-2026-000124 · Novembre 2026" droite={<Text fw={700} size="sm">70 000 FCFA</Text>} />
+          <Card withBorder shadow="md" radius="md" p={4} ml="auto" w={210}>
+            <Stack gap={2}>
+              <Bouton variant="subtle" icone={IconBrandWhatsapp}>Envoyer (PDF)</Bouton>
+              <Bouton id="image" variant="subtle" icone={IconPhoto}>Envoyer (image)</Bouton>
+            </Stack>
+          </Card>
         </Ecran>
+      ),
+      enregistre: () => (
+        <Ecran titre="Reçus">
+          <Card data-demo="enregistre" withBorder radius="md" bg="teal.0" mt="md">
+            <Group gap={6} wrap="nowrap"><IconDownload size={18} /><Text size="sm">Reçu enregistré dans « Téléchargements » : <b>Recu_DEM-2026-000124_Koffi-Houngbo.jpg</b></Text></Group>
+          </Card>
+        </Ecran>
+      ),
+      partage: () => (
+        <Stack h="100%" justify="flex-end" bg="dark.4">
+          <Card radius="lg" m="xs" p="md">
+            <Text fw={700} size="sm" mb="xs">Partager avec</Text>
+            <Group gap="lg">
+              <Icone id="whatsapp-app" icone={IconBrandWhatsapp} couleur="green" libelle="" />
+              <Icone icone={IconDownload} couleur="gray" libelle="" />
+              <Icone icone={IconShare} couleur="blue" libelle="" />
+            </Group>
+          </Card>
+        </Stack>
+      ),
+      contacts: () => (
+        <Stack h="100%" gap={0} bg="white">
+          <Group h={44} px="sm" bg="#075e54" c="white"><Text fw={700} size="sm">Envoyer à…</Text></Group>
+          <Stack p="sm" gap={0}>
+            <Ligne id="contact" titre="Koffi Houngbo" sous="+229 01 97 00 00 00" />
+            <Ligne titre="Awa Sanni" sous="+229 01 96 00 00 00" />
+            <Ligne titre="Famille" sous="Groupe" />
+          </Stack>
+        </Stack>
       ),
       whatsapp: () => (
         <Stack h="100%" gap="xs" p="sm" style={{ background: '#efeae2' }}>
           <Group h={40} px="xs" bg="#075e54" c="white" style={{ borderRadius: 8 }}><Text fw={700} size="sm">Koffi Houngbo</Text></Group>
-          <Bulle droite><Text size="xs">🧾 Recu-DEM-2026-000124.jpg</Text></Bulle>
-          <Bulle droite><Text size="sm">Bonjour Koffi, voici votre reçu de loyer N° DEM-2026-000124 pour septembre 2026. Merci.</Text></Bulle>
+          <Bulle droite><Text size="xs">🧾 Recu_DEM-2026-000124_Koffi-Houngbo.jpg</Text></Bulle>
+          <Bulle droite><Text size="sm">Bonjour Koffi, voici votre reçu de loyer N° DEM-2026-000124 pour novembre 2026. Merci.</Text></Bulle>
           <Group justify="flex-end" mt="auto"><Bouton id="envoyer" couleur="green">Envoyer</Bouton></Group>
         </Stack>
       ),
@@ -143,6 +225,9 @@ export const DEMOS: Demo[] = [
       { scene: 'liste', doigt: 'recherche', geste: 'montrer', etat: { recherche: 'Koffi' } },
       { scene: 'liste', doigt: 'whatsapp', geste: 'toucher', etat: { recherche: 'Koffi' } },
       { scene: 'format', doigt: 'image', geste: 'toucher' },
+      { scene: 'enregistre', doigt: 'enregistre', geste: 'montrer' },
+      { scene: 'partage', doigt: 'whatsapp-app', geste: 'toucher' },
+      { scene: 'contacts', doigt: 'contact', geste: 'toucher' },
       { scene: 'whatsapp', doigt: 'envoyer', geste: 'montrer' },
     ],
   },
@@ -464,6 +549,98 @@ export const DEMOS: Demo[] = [
       { scene: 'confirmation', doigt: 'impact', geste: 'montrer' },
       { scene: 'corbeille', doigt: 'restaurer', geste: 'toucher' },
       { scene: 'admin', doigt: 'admin', geste: 'montrer' },
+    ],
+  },
+  {
+    id: 'a_verifier', titre: 'Vérifier les paiements repris', description: 'Les anciens paiements à contrôler (propriétaire).', icone: IconAlertTriangle,
+    scenes: {
+      accueil: () => (
+        <Ecran titre="Immobilier Démo">
+          <Text fw={800}>Bonjour Ibrahim 👋</Text>
+          <Card data-demo="encart" withBorder radius="md" bg="orange.0">
+            <Group justify="space-between" wrap="nowrap" gap="xs">
+              <Text size="sm"><b>12 paiements de l’ancien logiciel</b> sont à vérifier.</Text>
+              <Bouton couleur="orange">Vérifier</Bouton>
+            </Group>
+          </Card>
+        </Ecran>
+      ),
+      liste: () => (
+        <Ecran titre="Paiements à vérifier" retour>
+          <Text fw={700} size="sm">Koffi Houngbo · En bas à droite N°2</Text>
+          <Ligne titre="55 000 FCFA · Avril 2020" sous="Payé le 18/05/2020"
+            droite={<Badge data-demo="etiquette" color="orange" variant="light">Montant différent du loyer</Badge>} />
+          <Group gap={6}>
+            <Bouton id="changer" variant="light" icone={IconCalendarEvent}>Changer le mois</Bouton>
+            <Bouton id="correct" variant="light" couleur="teal" icone={IconCircleCheck}>C’est correct</Bouton>
+          </Group>
+        </Ecran>
+      ),
+      changer: () => (
+        <Ecran titre="Changer le mois">
+          <Text size="sm">Paiement de 55 000 FCFA du 18/05/2020.</Text>
+          <Champ id="mois" label="Le bon mois" valeur="Mai 2020" />
+          <Bouton plein icone={IconCheck}>Enregistrer</Bouton>
+        </Ecran>
+      ),
+    },
+    etapes: [
+      { scene: 'accueil', doigt: 'encart', geste: 'toucher' },
+      { scene: 'liste', doigt: 'etiquette', geste: 'montrer' },
+      { scene: 'liste', doigt: 'changer', geste: 'toucher' },
+      { scene: 'changer', doigt: 'mois', geste: 'montrer' },
+      { scene: 'liste', doigt: 'correct', geste: 'toucher' },
+    ],
+  },
+  {
+    id: 'mot_de_passe', titre: 'Mot de passe oublié', description: 'Retrouver l’accès à son compte.', icone: IconKey,
+    scenes: {
+      connexion: () => (
+        <Ecran titre="Connexion">
+          <Champ label="Identifiant" valeur="koffi.gestion" />
+          <Champ label="Mot de passe" indice="••••••••" />
+          <Bouton plein>Se connecter</Bouton>
+          <Bouton id="oublie" variant="subtle">Mot de passe oublié ?</Bouton>
+        </Ecran>
+      ),
+      demande: (e) => (
+        <Ecran titre="Mot de passe oublié">
+          <Champ id="identifiant" label="Identifiant ou e-mail" valeur={e.identifiant as string | undefined} />
+          <Bouton id="envoyer" plein>Envoyer</Bouton>
+        </Ecran>
+      ),
+      envoyee: () => (
+        <Ecran titre="Demande envoyée">
+          <Card data-demo="email" withBorder radius="md">
+            <Text size="sm">📧 Si votre compte a une adresse e-mail, vous recevez un lien, valable 1 heure.</Text>
+          </Card>
+          <Card data-demo="proprio" withBorder radius="md">
+            <Text size="sm">🔔 Sinon, votre propriétaire est prévenu : il vous donne un mot de passe provisoire.</Text>
+          </Card>
+        </Ecran>
+      ),
+      nouveau: () => (
+        <Ecran titre="Nouveau mot de passe">
+          <Champ label="Nouveau mot de passe" valeur="••••••••••" />
+          <Champ label="Confirmez le mot de passe" valeur="••••••••••" />
+          <Bouton id="enregistrer" plein>Enregistrer et me connecter</Bouton>
+        </Ecran>
+      ),
+      comptes: () => (
+        <Ecran titre="Comptes">
+          <Ligne titre="Koffi Gestion" sous="Gestionnaire · koffi.gestion"
+            droite={<Bouton id="reinit" variant="light" icone={IconKey}>Réinitialiser</Bouton>} />
+        </Ecran>
+      ),
+    },
+    etapes: [
+      { scene: 'connexion', doigt: 'oublie', geste: 'toucher' },
+      { scene: 'demande', doigt: 'identifiant', geste: 'montrer', etat: { identifiant: 'koffi.gestion' } },
+      { scene: 'demande', doigt: 'envoyer', geste: 'toucher', etat: { identifiant: 'koffi.gestion' } },
+      { scene: 'envoyee', doigt: 'email', geste: 'montrer' },
+      { scene: 'envoyee', doigt: 'proprio', geste: 'montrer' },
+      { scene: 'nouveau', doigt: 'enregistrer', geste: 'toucher' },
+      { scene: 'comptes', doigt: 'reinit', geste: 'toucher' },
     ],
   },
   {

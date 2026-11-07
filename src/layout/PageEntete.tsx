@@ -15,6 +15,7 @@ const AIDE: [RegExp, string][] = [
   [/^\/(comptes|demandes)$/, 'gestionnaires'],
   [/^\/parametres$/, 'identite'],
   [/^\/corbeille$/, 'corbeille'],
+  [/^\/a-verifier$/, 'a_verifier'],
 ];
 
 const ACCUEILS = ['/', '/admin'];
