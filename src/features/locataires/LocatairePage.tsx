@@ -167,7 +167,9 @@ export function LocatairePage() {
                 <Group justify="space-between" py="sm" wrap="nowrap" align="flex-start">
                   <Stack gap={2} style={{ minWidth: 0, opacity: p.statut === 'annule' ? 0.55 : 1 }}>
                     <Text fw={700} td={p.statut === 'annule' ? 'line-through' : undefined}>
-                      {p.mois.map((m) => formatMois(m)).join(', ') || '—'}
+                      {p.montant === 0
+                        ? `Régularisation : ${p.mois.length} ancien${p.mois.length > 1 ? 's' : ''} mois réglé${p.mois.length > 1 ? 's' : ''}`
+                        : p.mois.map((m) => formatMois(m)).join(', ') || '—'}
                     </Text>
                     <Text size="sm" c="dimmed">
                       {formatDate(p.date_paiement)} · {LIBELLE_MODE[p.mode]} · par {p.reprise?.encaisseur ?? p.encaisse_par_nom}
@@ -176,7 +178,12 @@ export function LocatairePage() {
                     </Text>
                     {p.statut === 'valide' && <EtiquettesReprise etiquettes={p.a_verifier} />}
                     {p.statut === 'annule' && <Badge color="red" variant="light" size="sm">Annulé : {p.motif_annulation}</Badge>}
-                    {p.remise > 0 && <Text size="xs" c="dimmed">Remise accordée : {formatFCFA(p.remise)}</Text>}
+                    {p.montant === 0 && p.mois.length > 0 && (
+                      <Text size="xs" c="dimmed">
+                        {formatMois(p.mois[0])} → {formatMois(p.mois[p.mois.length - 1])} · {p.motif_remise}
+                      </Text>
+                    )}
+                    {p.remise > 0 && p.montant > 0 && <Text size="xs" c="dimmed">Remise accordée : {formatFCFA(p.remise)}</Text>}
                   </Stack>
                   <Group gap={4} wrap="nowrap">
                     <Text fw={700} className="montant">{formatFCFA(p.montant)}</Text>

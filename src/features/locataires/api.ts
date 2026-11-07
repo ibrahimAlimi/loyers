@@ -58,6 +58,7 @@ export interface PaiementDetail {
   date_paiement: string;
   montant: number;
   remise: number;
+  motif_remise: string | null;
   mode: ModePaiement;
   payeur: string;
   reference_transaction: string | null;

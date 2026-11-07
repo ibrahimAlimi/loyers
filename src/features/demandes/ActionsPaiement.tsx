@@ -49,7 +49,7 @@ export function ActionsPaiement({ paiement }: { paiement: PaiementDetail }) {
               C'est correct
             </Menu.Item>
           )}
-          {proprio && paiement.statut === 'valide' && (
+          {proprio && paiement.statut === 'valide' && paiement.montant > 0 && (
             <Menu.Item leftSection={<IconPencil size={16} />} onClick={modifier}>Modifier ce paiement</Menu.Item>
           )}
           <Menu.Item leftSection={<IconBan size={16} />} color="orange" onClick={() => setAnnulation(true)}>

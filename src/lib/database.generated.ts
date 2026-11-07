@@ -1878,6 +1878,10 @@ export type Database = {
         Args: { p_paiement: string }
         Returns: undefined
       }
+      regulariser_anciens_mois: {
+        Args: { p_prefixe: string; p_simulation?: boolean }
+        Returns: Json
+      }
       requete_entetes: { Args: never; Returns: Json }
       requete_ip: { Args: never; Returns: unknown }
       restaurer: { Args: { p_lot: string }; Returns: undefined }
