@@ -74,7 +74,17 @@ export interface EnvoiPret {
  */
 export async function preparerEnvoi(recu: Recu, format: 'pdf' | 'image', etat: EtatRecu = {}): Promise<EnvoiPret> {
   const pdf = await obtenirPdf(recu, etat);
-  const blob = format === 'pdf' ? pdf : await (await import('./pdf/genererPdf')).recuEnImage(pdf);
+  let blob = pdf;
+  if (format === 'image') {
+    try {
+      blob = await (await import('./pdf/genererPdf')).recuEnImage(pdf);
+    } catch (e) {
+      // Image impossible sur ce téléphone : on envoie le PDF, pour que l'envoi marche toujours
+      console.warn('Reçu en image impossible, envoi en PDF', e);
+      notifierSucces('L’image n’a pas pu être créée sur ce téléphone : le reçu est envoyé en PDF.');
+      format = 'pdf';
+    }
+  }
   const fichier = new File([blob], nomFichier(recu, format === 'pdf' ? 'pdf' : 'jpg'), { type: blob.type });
   journaliser('partage_recu', { espace: recu.espace_id, table: 'recus', id: recu.id, libelle: `Reçu N° ${recu.numero}`, details: { format } });
   if (!IOS) {

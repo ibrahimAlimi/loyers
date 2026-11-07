@@ -25,25 +25,58 @@ export async function genererRecuPdf(recu: Recu, options: Omit<OptionsRecu, 'dom
   return await pdf(element as any).toBlob();
 }
 
+type Pdfjs = typeof import('pdfjs-dist');
+
+// Deux versions de pdf.js, essayées dans l'ordre : la « legacy » embarque les fonctions JavaScript récentes
+// (Map.getOrInsertComputed…) que les navigateurs des téléphones n'ont pas encore (sinon : « getOrInsertComputed
+// is not a function ») ; si elle échoue, on bascule sur la version récente.
+const VERSIONS_PDFJS: (() => Promise<Pdfjs>)[] = [
+  async () => {
+    const pdfjs = (await import('pdfjs-dist/legacy/build/pdf.mjs')) as unknown as Pdfjs;
+    pdfjs.GlobalWorkerOptions.workerSrc = (await import('pdfjs-dist/legacy/build/pdf.worker.min.mjs?url')).default;
+    return pdfjs;
+  },
+  async () => {
+    const pdfjs = await import('pdfjs-dist');
+    pdfjs.GlobalWorkerOptions.workerSrc = (await import('pdfjs-dist/build/pdf.worker.min.mjs?url')).default;
+    return pdfjs;
+  },
+];
+
 /** Page 1 du PDF en JPEG (pour WhatsApp). */
 export async function recuEnImage(pdfBlob: Blob): Promise<Blob> {
-  // Version « legacy » : elle embarque les fonctions JavaScript récentes (Map.getOrInsertComputed…) que les
-  // navigateurs des téléphones n'ont pas encore ; sans elle : « getOrInsertComputed is not a function ».
-  const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
-  const worker = await import('pdfjs-dist/legacy/build/pdf.worker.min.mjs?url');
-  pdfjs.GlobalWorkerOptions.workerSrc = worker.default;
+  const donnees = await pdfBlob.arrayBuffer();
+  let erreur: unknown;
+  for (const charger of VERSIONS_PDFJS) {
+    try {
+      // Copie à chaque essai : pdf.js transfère les données à son worker, qui les rend inutilisables ensuite
+      return await pageEnJpeg(await charger(), donnees.slice(0));
+    } catch (e) {
+      erreur = e;
+      console.warn('Conversion du reçu en image : échec avec cette version de pdf.js, essai avec la suivante', e);
+    }
+  }
+  throw erreur;
+}
+
+async function pageEnJpeg(pdfjs: Pdfjs, donnees: ArrayBuffer): Promise<Blob> {
   // Seuls nos propres PDF sont lus ici (pdfjs-dist ≥ 6 : plus d'évaluation de code, faille GHSA-hq66-cqwq-w95j corrigée).
-  const doc = await pdfjs.getDocument({ data: await pdfBlob.arrayBuffer() }).promise;
-  const page = await doc.getPage(1);
-  const vue = page.getViewport({ scale: 2 });
-  const canvas = document.createElement('canvas');
-  canvas.width = vue.width;
-  canvas.height = vue.height;
-  const ctx = canvas.getContext('2d')!;
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  await page.render({ canvasContext: ctx, viewport: vue, canvas }).promise;
-  return await new Promise((resolve, reject) =>
-    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Image impossible'))), 'image/jpeg', 0.9),
-  );
+  const tache = pdfjs.getDocument({ data: donnees });
+  const doc = await tache.promise;
+  try {
+    const page = await doc.getPage(1);
+    const vue = page.getViewport({ scale: 2 });
+    const canvas = document.createElement('canvas');
+    canvas.width = vue.width;
+    canvas.height = vue.height;
+    const ctx = canvas.getContext('2d')!;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    await page.render({ canvasContext: ctx, viewport: vue, canvas }).promise;
+    return await new Promise((resolve, reject) =>
+      canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Image impossible'))), 'image/jpeg', 0.9),
+    );
+  } finally {
+    void tache.destroy();
+  }
 }
