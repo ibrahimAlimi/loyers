@@ -20,6 +20,7 @@ import { LIBELLE_ROLE } from '@/lib/format';
 import { supabase } from '@/lib/supabase';
 import { EtatVide } from '@/ui/EtatVide';
 import { NAVIGATION, type EntreeNavigation } from './navigation';
+import { BoutonActualiser } from './BoutonActualiser';
 
 export function AppShell() {
   const { profil, seDeconnecter } = useAuth();
@@ -122,6 +123,7 @@ export function AppShell() {
           </Group>
           <Group gap="xs" wrap="nowrap">
             {(profil?.est_super_admin || espaces.length > 1) && !mobile && <SelecteurEspace />}
+            <BoutonActualiser />
             <Cloche />
           </Group>
         </Group>
