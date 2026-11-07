@@ -84,24 +84,13 @@ export async function preparerEnvoi(recu: Recu, format: 'pdf' | 'image', etat: E
   return { fichier, message: messageWhatsApp(recu), titre: `Reçu ${recu.numero}` };
 }
 
-/**
- * Ouvre le partage du téléphone avec le fichier joint : on touche WhatsApp, puis on choisit le contact.
- * Le navigateur ne l'autorise que juste après un toucher : renvoie false s'il a refusé pour cette raison
- * (il faut alors proposer un bouton à toucher).
- */
-export async function partagerSurWhatsApp(e: EnvoiPret): Promise<boolean> {
-  if (navigator.canShare?.({ files: [e.fichier] })) {
-    try {
-      await navigator.share({ files: [e.fichier], text: e.message, title: e.titre });
-      return true;
-    } catch (err) {
-      const nom = (err as Error).name;
-      if (nom === 'AbortError') return true;      // l'utilisateur a fermé le menu de partage
-      if (nom === 'NotAllowedError') return false; // plus de toucher récent
-    }
+/** Ouvre le partage du téléphone avec le fichier joint (à appeler juste après un toucher) : on touche WhatsApp, puis le contact. */
+export async function partagerSurWhatsApp(e: EnvoiPret) {
+  try {
+    await navigator.share({ files: [e.fichier], text: e.message, title: e.titre });
+  } catch (err) {
+    if ((err as Error).name !== 'AbortError') window.open(lienWhatsApp(null, e.message), '_blank');
   }
-  // Sans partage de fichier : WhatsApp s'ouvre sur la liste des contacts ; le fichier se joint avec le trombone
-  return window.open(lienWhatsApp(null, e.message), '_blank') !== null;
 }
 
 export async function telechargerRecu(recu: Recu, etat: EtatRecu = {}) {

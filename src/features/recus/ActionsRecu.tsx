@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ActionIcon, Button, Loader, Menu, Modal, SimpleGrid, Stack, Text, Tooltip } from '@mantine/core';
 import { IconBrandWhatsapp, IconDownload, IconEye, IconPhoto, IconPrinter, IconReceipt } from '@tabler/icons-react';
 import { notifierErreur } from '@/lib/erreurs';
+import { lienWhatsApp } from '@/lib/telephone';
 import type { Recu } from '@/lib/types';
 import {
   imprimerRecu, IOS, partagerSurWhatsApp, preparerEnvoi, telechargerRecu, voirRecu, type EnvoiPret, type EtatRecu,
@@ -23,28 +24,37 @@ function useAction() {
 }
 
 /**
- * Envoi sur WhatsApp en deux temps : le reçu est préparé et enregistré dans le téléphone, puis le partage s'ouvre.
- * Si la préparation a pris trop de temps, le navigateur refuse d'ouvrir le partage : on affiche alors un bouton
- * « Partager sur WhatsApp » dont le toucher l'autorise de nouveau.
+ * Envoi sur WhatsApp en deux temps : le reçu est préparé et enregistré dans le téléphone, puis un bouton ouvre
+ * le partage. Le navigateur n'autorise le partage d'un fichier que juste après un toucher : la préparation
+ * prend quelques secondes, d'où ce second toucher.
  */
 function useEnvoi() {
   const [pret, setPret] = useState<EnvoiPret | null>(null);
-  const envoyer = async (recu: Recu, format: 'pdf' | 'image', etat?: EtatRecu) => {
-    const envoi = await preparerEnvoi(recu, format, etat);
-    const toucherRecent = navigator.userActivation?.isActive ?? true;
-    if (!toucherRecent || !(await partagerSurWhatsApp(envoi))) setPret(envoi);
-  };
+  const envoyer = async (recu: Recu, format: 'pdf' | 'image', etat?: EtatRecu) => setPret(await preparerEnvoi(recu, format, etat));
+  const partageFichier = !!pret && !!navigator.canShare?.({ files: [pret.fichier] });
   const fenetre = pret && (
     <Modal opened onClose={() => setPret(null)} title="Reçu prêt à envoyer" centered>
       <Stack>
         <Text size="sm">
           {IOS ? 'Le reçu est prêt.' : <>Le reçu est enregistré dans « Téléchargements » : <b>{pret.fichier.name}</b></>}
         </Text>
-        <Button color="green" size="md" leftSection={<IconBrandWhatsapp size={20} />}
-          onClick={() => { void partagerSurWhatsApp(pret); setPret(null); }}>
-          Partager sur WhatsApp
-        </Button>
-        <Text size="xs" c="dimmed">Dans le menu qui s'ouvre, touchez WhatsApp, puis choisissez le contact.</Text>
+        {partageFichier ? (
+          <Button color="green" size="md" leftSection={<IconBrandWhatsapp size={20} />}
+            onClick={() => { void partagerSurWhatsApp(pret); setPret(null); }}>
+            Partager sur WhatsApp
+          </Button>
+        ) : (
+          // Sans partage de fichier (ordinateur, ancien navigateur) : un vrai lien, jamais bloqué
+          <Button component="a" href={lienWhatsApp(null, pret.message)} target="_blank" rel="noopener noreferrer"
+            color="green" size="md" leftSection={<IconBrandWhatsapp size={20} />} onClick={() => setPret(null)}>
+            Ouvrir WhatsApp
+          </Button>
+        )}
+        <Text size="xs" c="dimmed">
+          {partageFichier
+            ? 'Dans le menu qui s’ouvre, touchez WhatsApp, puis choisissez le contact.'
+            : 'Choisissez le contact, puis joignez le reçu avec le trombone 📎 (il est dans « Téléchargements »).'}
+        </Text>
       </Stack>
     </Modal>
   );

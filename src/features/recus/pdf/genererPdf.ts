@@ -27,8 +27,10 @@ export async function genererRecuPdf(recu: Recu, options: Omit<OptionsRecu, 'dom
 
 /** Page 1 du PDF en JPEG (pour WhatsApp). */
 export async function recuEnImage(pdfBlob: Blob): Promise<Blob> {
-  const pdfjs = await import('pdfjs-dist');
-  const worker = await import('pdfjs-dist/build/pdf.worker.min.mjs?url');
+  // Version « legacy » : elle embarque les fonctions JavaScript récentes (Map.getOrInsertComputed…) que les
+  // navigateurs des téléphones n'ont pas encore ; sans elle : « getOrInsertComputed is not a function ».
+  const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
+  const worker = await import('pdfjs-dist/legacy/build/pdf.worker.min.mjs?url');
   pdfjs.GlobalWorkerOptions.workerSrc = worker.default;
   // Seuls nos propres PDF sont lus ici (pdfjs-dist ≥ 6 : plus d'évaluation de code, faille GHSA-hq66-cqwq-w95j corrigée).
   const doc = await pdfjs.getDocument({ data: await pdfBlob.arrayBuffer() }).promise;
