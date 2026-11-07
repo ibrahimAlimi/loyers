@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { ActionIcon, Alert, Button, Loader, Menu, Modal, SimpleGrid, Stack, Text, Tooltip } from '@mantine/core';
 import { IconBrandWhatsapp, IconDownload, IconEye, IconPhoto, IconPrinter, IconReceipt } from '@tabler/icons-react';
 import { notifierErreur } from '@/lib/erreurs';
-import { lienWhatsApp } from '@/lib/telephone';
 import type { Recu } from '@/lib/types';
 import {
   imprimerRecu, IOS, partagerSurWhatsApp, preparerEnvoi, telechargerRecu, voirRecu, type EnvoiPret, type EtatRecu,
@@ -60,19 +59,15 @@ function useEnvoi() {
             <Text size="xs" c="dimmed">Dans le menu qui s’ouvre, touchez WhatsApp, puis choisissez le contact. Le message est copié : appuyez longuement dans la zone de texte, puis « Coller ».</Text>
           </>
         )}
-        {erreur && (
-          <Alert color="orange" title="Le téléphone n’a pas ouvert le partage">
-            <Text size="sm">Utilisez « Ouvrir WhatsApp » ci-dessous, puis joignez le reçu avec le trombone 📎.</Text>
-            <Text size="xs" c="dimmed" mt={4}>Détail : {erreur}</Text>
+        {(erreur || !partageFichier) && (
+          <Alert color="orange" title={erreur ? 'Le téléphone n’a pas ouvert le partage' : 'Partage direct impossible ici'}>
+            <Text size="sm">
+              Ouvrez le reçu depuis « Téléchargements » (notification de téléchargement ou application « Mes fichiers »),
+              puis touchez Partager › WhatsApp et choisissez le contact.
+            </Text>
+            {erreur && <Text size="xs" c="dimmed" mt={4}>Détail : {erreur}</Text>}
           </Alert>
         )}
-        {/* Toujours disponible : un simple lien, que le téléphone ne bloque jamais */}
-        <Button component="a" href={lienWhatsApp(null, pret.message)} target="_blank" rel="noopener noreferrer"
-          variant={partageFichier && !erreur ? 'light' : 'filled'} color="green" size="md"
-          leftSection={<IconBrandWhatsapp size={20} />} onClick={fermer}>
-          Ouvrir WhatsApp
-        </Button>
-        <Text size="xs" c="dimmed">« Ouvrir WhatsApp » : choisissez le contact, puis joignez le reçu avec le trombone 📎 (il est dans « Téléchargements »).</Text>
       </Stack>
     </Modal>
   );
