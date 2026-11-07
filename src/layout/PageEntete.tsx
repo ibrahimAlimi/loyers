@@ -17,22 +17,28 @@ const AIDE: [RegExp, string][] = [
   [/^\/corbeille$/, 'corbeille'],
 ];
 
+const ACCUEILS = ['/', '/admin'];
+
 export function PageEntete({ titre, sousTitre, actions, retour, aide }: {
   titre: ReactNode;
   sousTitre?: ReactNode;
   actions?: ReactNode;
+  /** Écran parent, utilisé quand il n'y a pas d'écran précédent (lien ouvert directement). */
   retour?: string;
   /** Démo du bouton « ? » ; par défaut, celle de l'écran courant. */
   aide?: string;
 }) {
   const navigate = useNavigate();
-  const { pathname } = useLocation();
+  const { pathname, key } = useLocation();
   const demo = aide ?? AIDE.find(([re]) => re.test(pathname))?.[1];
+  // Pas de flèche sur les écrans d'accueil ; ailleurs, retour à l'écran précédent (utile dans l'application installée)
+  const avecRetour = !ACCUEILS.includes(pathname);
+  const revenir = () => (key !== 'default' ? navigate(-1) : navigate(retour ?? '/'));
   return (
     <Group justify="space-between" align="flex-start" mb="lg" gap="sm">
       <Group gap="xs" align="flex-start" wrap="nowrap" style={{ minWidth: 0 }}>
-        {retour && (
-          <ActionIcon variant="subtle" size="lg" onClick={() => navigate(retour)} aria-label="Retour" mt={2}>
+        {avecRetour && (
+          <ActionIcon variant="subtle" size="lg" onClick={revenir} aria-label="Revenir à l'écran précédent" title="Retour" mt={2}>
             <IconArrowLeft />
           </ActionIcon>
         )}
