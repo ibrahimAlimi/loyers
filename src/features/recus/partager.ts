@@ -93,7 +93,7 @@ export async function fichierRecu(recu: Recu, format: 'pdf' | 'image', etat: Eta
  * Renvoie null si c'est fait (ou fermé par l'utilisateur), sinon l'erreur du navigateur.
  * Sur iPhone, Safari ne sait pas enregistrer en silence : « Enregistrer dans Fichiers » est dans le menu de partage.
  */
-export async function envoyerSurWhatsApp(recu: Recu, pret: File, message = messageWhatsApp(recu)): Promise<string | null> {
+export async function envoyerSurWhatsApp(recu: Recu, pret: File): Promise<string | null> {
   const fichier = new File([pret], nomFichier(recu, pret.type === 'image/jpeg' ? 'jpg' : 'pdf'), { type: pret.type });
   journaliser('partage_recu', {
     espace: recu.espace_id, table: 'recus', id: recu.id, libelle: `Reçu N° ${recu.numero}`,
@@ -103,7 +103,7 @@ export async function envoyerSurWhatsApp(recu: Recu, pret: File, message = messa
     telecharger(fichier, fichier.name);
     notifierSucces(`Reçu enregistré dans « Téléchargements » : ${fichier.name}`);
   }
-  void navigator.clipboard?.writeText(message).catch(() => undefined);
+  void navigator.clipboard?.writeText(messageWhatsApp(recu)).catch(() => undefined);
   if (!navigator.canShare?.({ files: [fichier] })) {
     return 'Ce navigateur ne sait pas partager de fichier.';
   }
