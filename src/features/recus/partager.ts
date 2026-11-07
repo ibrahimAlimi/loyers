@@ -64,7 +64,6 @@ export function messageWhatsApp(recu: Recu): string {
 export interface EnvoiPret {
   fichier: File;
   message: string;
-  titre: string;
 }
 
 /**
@@ -90,7 +89,7 @@ export async function preparerEnvoi(recu: Recu, format: 'pdf' | 'image', etat: E
     telecharger(blob, fichier.name);
     notifierSucces(`Reçu enregistré dans « Téléchargements » : ${fichier.name}`);
   }
-  return { fichier, message: messageWhatsApp(recu), titre: `Reçu ${recu.numero}` };
+  return { fichier, message: messageWhatsApp(recu) };
 }
 
 /**
@@ -98,8 +97,11 @@ export async function preparerEnvoi(recu: Recu, format: 'pdf' | 'image', etat: E
  * puis le contact. Renvoie null si c'est fait (ou fermé par l'utilisateur), sinon l'erreur du navigateur.
  */
 export async function partagerSurWhatsApp(e: EnvoiPret): Promise<string | null> {
+  // Le message va dans le presse-papiers (à coller dans WhatsApp si besoin) : Chrome sur Android refuse souvent
+  // un fichier partagé avec un titre et un texte (« NotAllowedError : Permission denied »).
+  void navigator.clipboard?.writeText(e.message).catch(() => undefined);
   try {
-    await navigator.share({ files: [e.fichier], text: e.message, title: e.titre });
+    await navigator.share({ files: [e.fichier] });
     return null;
   } catch (err) {
     const { name, message } = err as Error;

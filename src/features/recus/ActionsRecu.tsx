@@ -57,7 +57,7 @@ function useEnvoi() {
             <Button color="green" size="md" leftSection={<IconBrandWhatsapp size={20} />} loading={envoi} onClick={partager}>
               Partager sur WhatsApp
             </Button>
-            <Text size="xs" c="dimmed">Dans le menu qui s’ouvre, touchez WhatsApp, puis choisissez le contact.</Text>
+            <Text size="xs" c="dimmed">Dans le menu qui s’ouvre, touchez WhatsApp, puis choisissez le contact. Le message est copié : appuyez longuement dans la zone de texte, puis « Coller ».</Text>
           </>
         )}
         {erreur && (
