@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ActionIcon, Alert, Button, Loader, Menu, Modal, SimpleGrid, Stack, Text, Tooltip } from '@mantine/core';
-import { IconBrandWhatsapp, IconDownload, IconEye, IconPhoto, IconPrinter, IconReceipt } from '@tabler/icons-react';
+import { IconBrandWhatsapp, IconEye, IconFileTypePdf, IconPhoto, IconPrinter, IconReceipt } from '@tabler/icons-react';
 import { notifierErreur } from '@/lib/erreurs';
 import type { Recu } from '@/lib/types';
 import {
@@ -31,9 +31,9 @@ function useEnvoi() {
   const [pret, setPret] = useState<EnvoiPret | null>(null);
   const [envoi, setEnvoi] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
-  const envoyer = async (recu: Recu, format: 'pdf' | 'image', etat?: EtatRecu) => {
+  const envoyer = async (recu: Recu, etat?: EtatRecu) => {
     setErreur(null);
-    setPret(await preparerEnvoi(recu, format, etat));
+    setPret(await preparerEnvoi(recu, etat));
   };
   const fermer = () => { setPret(null); setErreur(null); };
   const partager = async () => {
@@ -91,14 +91,16 @@ export function ActionsRecu({ recu, etat }: { recu: Recu; etat?: EtatRecu }) {
         <Menu.Dropdown>
           <Menu.Label>{recu.numero}</Menu.Label>
           <Menu.Item leftSection={<IconEye size={16} />} onClick={lancer('voir', () => voirRecu(recu, etat))}>Voir</Menu.Item>
-          <Menu.Item leftSection={<IconBrandWhatsapp size={16} />} onClick={lancer('pdf', () => envoyer(recu, 'pdf', etat))}>
-            Envoyer (PDF)
-          </Menu.Item>
-          <Menu.Item leftSection={<IconPhoto size={16} />} onClick={lancer('img', () => envoyer(recu, 'image', etat))}>
-            Envoyer (image)
+          <Menu.Item leftSection={<IconBrandWhatsapp size={16} />} onClick={lancer('wa', () => envoyer(recu, etat))}>
+            Envoyer sur WhatsApp
           </Menu.Item>
           <Menu.Item leftSection={<IconPrinter size={16} />} onClick={lancer('imp', () => imprimerRecu(recu, etat))}>Imprimer</Menu.Item>
-          <Menu.Item leftSection={<IconDownload size={16} />} onClick={lancer('dl', () => telechargerRecu(recu, etat))}>Télécharger</Menu.Item>
+          <Menu.Item leftSection={<IconFileTypePdf size={16} />} onClick={lancer('dl', () => telechargerRecu(recu, 'pdf', etat))}>
+            Télécharger (PDF)
+          </Menu.Item>
+          <Menu.Item leftSection={<IconPhoto size={16} />} onClick={lancer('dli', () => telechargerRecu(recu, 'image', etat))}>
+            Télécharger (image)
+          </Menu.Item>
         </Menu.Dropdown>
       </Menu>
       {fenetre}
@@ -114,20 +116,20 @@ export function BoutonsRecu({ recu }: { recu: Recu }) {
   return (
     <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="xs" w="100%" maw={460}>
       <Button color="green" leftSection={icone('wa', <IconBrandWhatsapp size={20} />)} disabled={!!enCours}
-        onClick={lancer('wa', () => envoyer(recu, 'image'))}>
+        onClick={lancer('wa', () => envoyer(recu))}>
         Envoyer sur WhatsApp
-      </Button>
-      <Button variant="default" leftSection={icone('pdf', <IconReceipt size={20} />)} disabled={!!enCours}
-        onClick={lancer('pdf', () => envoyer(recu, 'pdf'))}>
-        Envoyer en PDF
       </Button>
       <Button variant="default" leftSection={icone('imp', <IconPrinter size={20} />)} disabled={!!enCours}
         onClick={lancer('imp', () => imprimerRecu(recu))}>
         Imprimer
       </Button>
-      <Button variant="default" leftSection={icone('dl', <IconDownload size={20} />)} disabled={!!enCours}
-        onClick={lancer('dl', () => telechargerRecu(recu))}>
-        Télécharger
+      <Button variant="default" leftSection={icone('dl', <IconFileTypePdf size={20} />)} disabled={!!enCours}
+        onClick={lancer('dl', () => telechargerRecu(recu, 'pdf'))}>
+        Télécharger (PDF)
+      </Button>
+      <Button variant="default" leftSection={icone('dli', <IconPhoto size={20} />)} disabled={!!enCours}
+        onClick={lancer('dli', () => telechargerRecu(recu, 'image'))}>
+        Télécharger (image)
       </Button>
       {fenetre}
     </SimpleGrid>

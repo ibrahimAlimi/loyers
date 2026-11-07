@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { formatMois } from '@/lib/format';
+import { dayjs, FUSEAU } from '@/lib/dates';
 import { rafraichirDonnees } from '@/lib/queryClient';
 import type { Recu } from '@/lib/types';
 import { journaliser } from '@/lib/audit';
@@ -32,12 +33,14 @@ async function obtenirPdf(recu: Recu, etat: EtatRecu): Promise<Blob> {
   return blob;
 }
 
-// Nom unique et lisible dans le téléphone : « Recu_ABD-2026-000124_Koffi-Houngbo.jpg » (le numéro ne sert qu'une fois)
+// Nom lisible et unique dans « Téléchargements », même si le même reçu est envoyé plusieurs fois :
+// « Recu_ABD-2026-000124_Koffi-Houngbo_20261107-230512.jpg »
 const nomFichier = (recu: Recu, ext: string) => {
   const nom = recu.contenu.locataire.nom_complet
     .normalize('NFD').replace(/[̀-ͯ]/g, '')
     .replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  return `Recu_${recu.numero}${nom ? `_${nom}` : ''}.${ext}`;
+  const horodatage = dayjs().tz(FUSEAU).format('YYYYMMDD-HHmmss');
+  return `Recu_${recu.numero}${nom ? `_${nom}` : ''}_${horodatage}.${ext}`;
 };
 export const IOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
@@ -66,27 +69,34 @@ export interface EnvoiPret {
   message: string;
 }
 
-/**
- * Prépare le reçu à envoyer (PDF ou image) et l'enregistre dans le téléphone (dossier « Téléchargements »).
- * Sur iPhone, Safari ne sait pas enregistrer en silence : « Enregistrer dans Fichiers » est dans le menu de partage.
- */
-export async function preparerEnvoi(recu: Recu, format: 'pdf' | 'image', etat: EtatRecu = {}): Promise<EnvoiPret> {
+/** Le reçu en image JPEG ou en PDF. Si l'image ne peut pas être créée sur ce téléphone, on donne le PDF. */
+async function fichierRecu(recu: Recu, format: 'pdf' | 'image', etat: EtatRecu): Promise<File> {
   const pdf = await obtenirPdf(recu, etat);
-  let blob = pdf;
   if (format === 'image') {
     try {
-      blob = await (await import('./pdf/genererPdf')).recuEnImage(pdf);
+      const image = await (await import('./pdf/genererPdf')).recuEnImage(pdf);
+      return new File([image], nomFichier(recu, 'jpg'), { type: 'image/jpeg' });
     } catch (e) {
-      // Image impossible sur ce téléphone : on envoie le PDF, pour que l'envoi marche toujours
-      console.warn('Reçu en image impossible, envoi en PDF', e);
-      notifierSucces('L’image n’a pas pu être créée sur ce téléphone : le reçu est envoyé en PDF.');
-      format = 'pdf';
+      console.warn('Reçu en image impossible, PDF à la place', e);
+      notifierSucces('L’image n’a pas pu être créée sur ce téléphone : le reçu est en PDF.');
     }
   }
-  const fichier = new File([blob], nomFichier(recu, format === 'pdf' ? 'pdf' : 'jpg'), { type: blob.type });
-  journaliser('partage_recu', { espace: recu.espace_id, table: 'recus', id: recu.id, libelle: `Reçu N° ${recu.numero}`, details: { format } });
+  return new File([pdf], nomFichier(recu, 'pdf'), { type: 'application/pdf' });
+}
+
+/**
+ * Prépare le reçu à envoyer sur WhatsApp, toujours en image (le partage d'un PDF est refusé par Chrome sur
+ * Android), et l'enregistre dans le téléphone (dossier « Téléchargements »).
+ * Sur iPhone, Safari ne sait pas enregistrer en silence : « Enregistrer dans Fichiers » est dans le menu de partage.
+ */
+export async function preparerEnvoi(recu: Recu, etat: EtatRecu = {}): Promise<EnvoiPret> {
+  const fichier = await fichierRecu(recu, 'image', etat);
+  journaliser('partage_recu', {
+    espace: recu.espace_id, table: 'recus', id: recu.id, libelle: `Reçu N° ${recu.numero}`,
+    details: { format: fichier.type === 'image/jpeg' ? 'image' : 'pdf' },
+  });
   if (!IOS) {
-    telecharger(blob, fichier.name);
+    telecharger(fichier, fichier.name);
     notifierSucces(`Reçu enregistré dans « Téléchargements » : ${fichier.name}`);
   }
   return { fichier, message: messageWhatsApp(recu) };
@@ -111,8 +121,10 @@ export async function partagerSurWhatsApp(e: EnvoiPret): Promise<string | null> 
   }
 }
 
-export async function telechargerRecu(recu: Recu, etat: EtatRecu = {}) {
-  telecharger(await obtenirPdf(recu, etat), nomFichier(recu, 'pdf'));
+export async function telechargerRecu(recu: Recu, format: 'pdf' | 'image', etat: EtatRecu = {}) {
+  const fichier = await fichierRecu(recu, format, etat);
+  telecharger(fichier, fichier.name);
+  if (!IOS) notifierSucces(`Reçu enregistré dans « Téléchargements » : ${fichier.name}`);
 }
 
 export async function voirRecu(recu: Recu, etat: EtatRecu = {}) {

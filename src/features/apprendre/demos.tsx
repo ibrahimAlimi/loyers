@@ -177,16 +177,21 @@ export const DEMOS: Demo[] = [
           <Ligne titre="Koffi Houngbo" sous="DEM-2026-000124 · Novembre 2026" droite={<Text fw={700} size="sm">70 000 FCFA</Text>} />
           <Card withBorder shadow="md" radius="md" p={4} ml="auto" w={210}>
             <Stack gap={2}>
-              <Bouton variant="subtle" icone={IconBrandWhatsapp}>Envoyer (PDF)</Bouton>
-              <Bouton id="image" variant="subtle" icone={IconPhoto}>Envoyer (image)</Bouton>
+              <Bouton id="image" variant="subtle" icone={IconBrandWhatsapp}>Envoyer sur WhatsApp</Bouton>
+              <Bouton variant="subtle" icone={IconPrinter}>Imprimer</Bouton>
+              <Bouton variant="subtle" icone={IconPhoto}>Télécharger (image)</Bouton>
             </Stack>
           </Card>
         </Ecran>
       ),
       enregistre: () => (
         <Ecran titre="Reçus">
-          <Card data-demo="enregistre" withBorder radius="md" bg="teal.0" mt="md">
-            <Group gap={6} wrap="nowrap"><IconDownload size={18} /><Text size="sm">Reçu enregistré dans « Téléchargements » : <b>Recu_DEM-2026-000124_Koffi-Houngbo.jpg</b></Text></Group>
+          <Card withBorder shadow="md" radius="md" mt="md">
+            <Stack gap="xs">
+              <Text fw={700} size="sm">Reçu prêt à envoyer</Text>
+              <Group gap={6} wrap="nowrap"><IconDownload size={18} /><Text size="sm">Enregistré dans « Téléchargements » : <b>Recu_DEM-2026-000124_Koffi-Houngbo_20261107-101500.jpg</b></Text></Group>
+              <Bouton id="enregistre" couleur="green" plein icone={IconBrandWhatsapp}>Partager sur WhatsApp</Bouton>
+            </Stack>
           </Card>
         </Ecran>
       ),
@@ -215,7 +220,7 @@ export const DEMOS: Demo[] = [
       whatsapp: () => (
         <Stack h="100%" gap="xs" p="sm" style={{ background: '#efeae2' }}>
           <Group h={40} px="xs" bg="#075e54" c="white" style={{ borderRadius: 8 }}><Text fw={700} size="sm">Koffi Houngbo</Text></Group>
-          <Bulle droite><Text size="xs">🧾 Recu_DEM-2026-000124_Koffi-Houngbo.jpg</Text></Bulle>
+          <Bulle droite><Text size="xs">🧾 Recu_DEM-2026-000124_Koffi-Houngbo_20261107-101500.jpg</Text></Bulle>
           <Bulle droite><Text size="sm">Bonjour Koffi, voici votre reçu de loyer N° DEM-2026-000124 pour novembre 2026. Merci.</Text></Bulle>
           <Group justify="flex-end" mt="auto"><Bouton id="envoyer" couleur="green">Envoyer</Bouton></Group>
         </Stack>
@@ -226,7 +231,7 @@ export const DEMOS: Demo[] = [
       { scene: 'liste', doigt: 'recherche', geste: 'montrer', etat: { recherche: 'Koffi' } },
       { scene: 'liste', doigt: 'whatsapp', geste: 'toucher', etat: { recherche: 'Koffi' } },
       { scene: 'format', doigt: 'image', geste: 'toucher' },
-      { scene: 'enregistre', doigt: 'enregistre', geste: 'montrer' },
+      { scene: 'enregistre', doigt: 'enregistre', geste: 'toucher' },
       { scene: 'partage', doigt: 'whatsapp-app', geste: 'toucher' },
       { scene: 'contacts', doigt: 'contact', geste: 'toucher' },
       { scene: 'whatsapp', doigt: 'envoyer', geste: 'montrer' },
