@@ -83,7 +83,7 @@ export function RecusPage() {
                 </div>
                 <Group gap={6} wrap="nowrap">
                   <Text fw={700} className="montant">{formatFCFA(r.contenu.montant)}</Text>
-                  <ActionsRecu recu={r} telephone={r.contenu.locataire.telephone} etat={{ annule: r.annule }} />
+                  <ActionsRecu recu={r} etat={{ annule: r.annule }} />
                 </Group>
               </Group>
             </Card>
@@ -109,7 +109,7 @@ export function RecusPage() {
                   <Table.Td className="montant" fw={700}>{formatFCFA(r.contenu.montant)}</Table.Td>
                   {voir('emis_le') && <Table.Td>{formatDate(r.emis_le)}</Table.Td>}
                   {voir('statut') && <Table.Td>{statut(r)}</Table.Td>}
-                  <Table.Td><ActionsRecu recu={r} telephone={r.contenu.locataire.telephone} etat={{ annule: r.annule }} /></Table.Td>
+                  <Table.Td><ActionsRecu recu={r} etat={{ annule: r.annule }} /></Table.Td>
                 </Table.Tr>
               ))}
             </Table.Tbody>

@@ -21,7 +21,7 @@ function useAction() {
 }
 
 /** Petit menu « Reçu » (listes). */
-export function ActionsRecu({ recu, telephone, etat }: { recu: Recu; telephone: string | null; etat?: EtatRecu }) {
+export function ActionsRecu({ recu, etat }: { recu: Recu; etat?: EtatRecu }) {
   const { enCours, lancer } = useAction();
   return (
     <Menu position="bottom-end" withinPortal>
@@ -35,10 +35,10 @@ export function ActionsRecu({ recu, telephone, etat }: { recu: Recu; telephone: 
       <Menu.Dropdown>
         <Menu.Label>{recu.numero}</Menu.Label>
         <Menu.Item leftSection={<IconEye size={16} />} onClick={lancer('voir', () => voirRecu(recu, etat))}>Voir</Menu.Item>
-        <Menu.Item leftSection={<IconBrandWhatsapp size={16} />} onClick={lancer('pdf', () => partagerRecu(recu, 'pdf', telephone, etat))}>
+        <Menu.Item leftSection={<IconBrandWhatsapp size={16} />} onClick={lancer('pdf', () => partagerRecu(recu, 'pdf', etat))}>
           Envoyer (PDF)
         </Menu.Item>
-        <Menu.Item leftSection={<IconPhoto size={16} />} onClick={lancer('img', () => partagerRecu(recu, 'image', telephone, etat))}>
+        <Menu.Item leftSection={<IconPhoto size={16} />} onClick={lancer('img', () => partagerRecu(recu, 'image', etat))}>
           Envoyer (image)
         </Menu.Item>
         <Menu.Item leftSection={<IconPrinter size={16} />} onClick={lancer('imp', () => imprimerRecu(recu, etat))}>Imprimer</Menu.Item>
@@ -49,17 +49,17 @@ export function ActionsRecu({ recu, telephone, etat }: { recu: Recu; telephone: 
 }
 
 /** Gros boutons (fin de l'assistant d'encaissement). */
-export function BoutonsRecu({ recu, telephone }: { recu: Recu; telephone: string | null }) {
+export function BoutonsRecu({ recu }: { recu: Recu }) {
   const { enCours, lancer } = useAction();
   const icone = (nom: string, i: React.ReactNode) => (enCours === nom ? <Loader size={16} color="currentColor" /> : i);
   return (
     <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="xs" w="100%" maw={460}>
       <Button color="green" leftSection={icone('wa', <IconBrandWhatsapp size={20} />)} disabled={!!enCours}
-        onClick={lancer('wa', () => partagerRecu(recu, 'image', telephone))}>
+        onClick={lancer('wa', () => partagerRecu(recu, 'image'))}>
         Envoyer sur WhatsApp
       </Button>
       <Button variant="default" leftSection={icone('pdf', <IconReceipt size={20} />)} disabled={!!enCours}
-        onClick={lancer('pdf', () => partagerRecu(recu, 'pdf', telephone))}>
+        onClick={lancer('pdf', () => partagerRecu(recu, 'pdf'))}>
         Envoyer en PDF
       </Button>
       <Button variant="default" leftSection={icone('imp', <IconPrinter size={20} />)} disabled={!!enCours}

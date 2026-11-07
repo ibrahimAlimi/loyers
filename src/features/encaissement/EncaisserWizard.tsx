@@ -198,7 +198,7 @@ export default function EncaisserWizard({ pre, onFermer }: { pre?: PreRemplissag
             <Text c="dimmed">
               {formatFCFA(recu.contenu.montant)} · {recu.contenu.mois.map((m) => formatMois(m)).join(', ')}
             </Text>
-            <BoutonsRecu recu={recu} telephone={bail?.telephone ?? null} />
+            <BoutonsRecu recu={recu} />
           </Stack>
         )}
       </Stack>

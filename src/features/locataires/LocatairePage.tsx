@@ -180,7 +180,7 @@ export function LocatairePage() {
                   </Stack>
                   <Group gap={4} wrap="nowrap">
                     <Text fw={700} className="montant">{formatFCFA(p.montant)}</Text>
-                    {p.recu && <ActionsRecu recu={p.recu} telephone={locataire.telephone} etat={{ annule: p.statut === 'annule' }} />}
+                    {p.recu && <ActionsRecu recu={p.recu} etat={{ annule: p.statut === 'annule' }} />}
                     {p.statut === 'valide' && <ActionsPaiement paiement={p} />}
                   </Group>
                 </Group>
@@ -200,7 +200,7 @@ export function LocatairePage() {
                 </Text>
                 <Group gap={4}>
                   <Text fw={600} className="montant">{formatFCFA(m.montant)}</Text>
-                  {m.recu && <ActionsRecu recu={m.recu} telephone={locataire.telephone} />}
+                  {m.recu && <ActionsRecu recu={m.recu} />}
                 </Group>
               </Group>
             ))}

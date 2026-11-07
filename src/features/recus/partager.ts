@@ -4,6 +4,7 @@ import { formatMois } from '@/lib/format';
 import { rafraichirDonnees } from '@/lib/queryClient';
 import type { Recu } from '@/lib/types';
 import { journaliser } from '@/lib/audit';
+import { notifierSucces } from '@/lib/erreurs';
 
 export interface EtatRecu {
   annule?: boolean;
@@ -32,7 +33,14 @@ async function obtenirPdf(recu: Recu, etat: EtatRecu): Promise<Blob> {
   return blob;
 }
 
-const nomFichier = (recu: Recu, ext: string) => `recu-${recu.numero}.${ext}`;
+// Nom unique et lisible dans le téléphone : « Recu_ABD-2026-000124_Koffi-Houngbo.jpg » (le numéro ne sert qu'une fois)
+const nomFichier = (recu: Recu, ext: string) => {
+  const nom = recu.contenu.locataire.nom_complet
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  return `Recu_${recu.numero}${nom ? `_${nom}` : ''}.${ext}`;
+};
+const IOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 function telecharger(blob: Blob, nom: string) {
   const url = URL.createObjectURL(blob);
@@ -54,12 +62,22 @@ export function messageWhatsApp(recu: Recu): string {
   return `Bonjour ${prenom}, voici ${objet}. Merci.`;
 }
 
-export async function partagerRecu(recu: Recu, format: 'pdf' | 'image', telephone: string | null, etat: EtatRecu = {}) {
+/**
+ * Envoi sur WhatsApp : le reçu est d'abord enregistré dans le téléphone (dossier « Téléchargements »),
+ * puis WhatsApp s'ouvre et l'utilisateur choisit lui-même le contact.
+ * Sur iPhone, Safari ne sait pas enregistrer en silence : « Enregistrer dans Fichiers » est dans le menu de partage.
+ */
+export async function partagerRecu(recu: Recu, format: 'pdf' | 'image', etat: EtatRecu = {}) {
   const pdf = await obtenirPdf(recu, etat);
   const blob = format === 'pdf' ? pdf : await (await import('./pdf/genererPdf')).recuEnImage(pdf);
   const fichier = new File([blob], nomFichier(recu, format === 'pdf' ? 'pdf' : 'jpg'), { type: blob.type });
   const message = messageWhatsApp(recu);
   journaliser('partage_recu', { espace: recu.espace_id, table: 'recus', id: recu.id, libelle: `Reçu N° ${recu.numero}`, details: { format } });
+  if (!IOS) {
+    telecharger(blob, fichier.name);
+    notifierSucces(`Reçu enregistré dans « Téléchargements » : ${fichier.name}`);
+  }
+  // Menu de partage avec le fichier joint : on touche WhatsApp, puis on choisit le contact
   if (navigator.canShare?.({ files: [fichier] })) {
     try {
       await navigator.share({ files: [fichier], text: message, title: `Reçu ${recu.numero}` });
@@ -68,8 +86,8 @@ export async function partagerRecu(recu: Recu, format: 'pdf' | 'image', telephon
       if ((e as Error).name === 'AbortError') return;
     }
   }
-  telecharger(blob, fichier.name);
-  window.open(lienWhatsApp(telephone, message), '_blank');
+  // Sinon WhatsApp s'ouvre sur la liste des contacts, avec le message ; le fichier se joint avec le trombone
+  window.open(lienWhatsApp(null, message), '_blank');
 }
 
 export async function telechargerRecu(recu: Recu, etat: EtatRecu = {}) {
