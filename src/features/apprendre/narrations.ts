@@ -41,7 +41,7 @@ export const NARRATIONS: Record<string, string[]> = {
     'Trouvez le reçu : tapez le nom du locataire ou le numéro du reçu.',
     'Touchez le bouton du reçu : son aperçu s’ouvre.',
     'Touchez « Envoyer sur WhatsApp ».',
-    'Le reçu est enregistré en image dans « Téléchargements », sous un nom unique.',
+    'Vérifiez le message, modifiez-le si besoin, puis touchez « Confirmer et partager ». « Annuler » ne change rien.',
     'Touchez WhatsApp.',
     'Choisissez vous-même le contact à qui envoyer le reçu.',
     'Le reçu est joint. Collez le message, qui est déjà copié, puis envoyez.',

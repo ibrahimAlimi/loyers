@@ -195,8 +195,15 @@ export const DEMOS: Demo[] = [
       apercu: () => apercuRecu(),
       enregistre: () => (
         <Ecran titre="Reçu N° DEM-2026-000124">
-          <Card data-demo="enregistre" withBorder radius="md" bg="teal.0" mt="md">
-            <Group gap={6} wrap="nowrap"><IconDownload size={18} /><Text size="sm">Reçu enregistré dans « Téléchargements » : <b>Recu_DEM-2026-000124_Koffi-Houngbo_20261107-101500.jpg</b></Text></Group>
+          <Card withBorder shadow="md" radius="md" mt="md">
+            <Stack gap="xs">
+              <Text fw={700} size="sm">Envoyer ce reçu sur WhatsApp ?</Text>
+              <Champ label="Message à coller dans WhatsApp" valeur="Bonjour Koffi, voici votre reçu de loyer N° DEM-2026-000124 pour novembre 2026. Merci." />
+              <Group justify="flex-end" gap="xs">
+                <Bouton variant="default">Annuler</Bouton>
+                <Bouton id="enregistre" couleur="green" icone={IconBrandWhatsapp}>Confirmer et partager</Bouton>
+              </Group>
+            </Stack>
           </Card>
         </Ecran>
       ),
@@ -236,7 +243,7 @@ export const DEMOS: Demo[] = [
       { scene: 'liste', doigt: 'recherche', geste: 'montrer', etat: { recherche: 'Koffi' } },
       { scene: 'liste', doigt: 'recu', geste: 'toucher', etat: { recherche: 'Koffi' } },
       { scene: 'apercu', doigt: 'envoyer-whatsapp', geste: 'toucher' },
-      { scene: 'enregistre', doigt: 'enregistre', geste: 'montrer' },
+      { scene: 'enregistre', doigt: 'enregistre', geste: 'toucher' },
       { scene: 'partage', doigt: 'whatsapp-app', geste: 'toucher' },
       { scene: 'contacts', doigt: 'contact', geste: 'toucher' },
       { scene: 'whatsapp', doigt: 'envoyer', geste: 'montrer' },
