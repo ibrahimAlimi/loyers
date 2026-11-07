@@ -11,3 +11,6 @@ supabase/.branches
 docs/
 CLAUDE.md
 *.mp4
+
+# Cache de compilation TypeScript (réécrit à chaque tsc -b)
+*.tsbuildinfo
