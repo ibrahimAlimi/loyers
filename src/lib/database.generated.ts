@@ -1789,9 +1789,54 @@ export type Database = {
         Returns: string
       }
       mfa_respectee: { Args: never; Returns: boolean }
+      modifier_paiement: {
+        Args: {
+          p_cle_idempotence: string
+          p_date: string
+          p_mode: Database["public"]["Enums"]["mode_paiement"]
+          p_mois?: string[]
+          p_montant: number
+          p_motif_remise?: string
+          p_paiement: string
+          p_payeur: string
+          p_reference: string
+          p_reste?: string
+        }
+        Returns: {
+          code_verification: string
+          contenu: Json
+          cree_le: string
+          cree_par: string | null
+          emis_le: string
+          emis_par: string | null
+          empreinte: string
+          espace_id: string
+          id: string
+          lot_suppression: string | null
+          modifie_le: string | null
+          mouvement_caution_id: string | null
+          nb_duplicatas: number
+          numero: string
+          original_genere: boolean
+          paiement_id: string | null
+          supprime_le: string | null
+          supprime_par: string | null
+          type: Database["public"]["Enums"]["type_recu"]
+        }
+        SetofOptions: {
+          from: "*"
+          to: "recus"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       niveau_session: { Args: never; Returns: string }
       nom_de: { Args: { p_user: string }; Returns: string }
       nom_mois: { Args: { p_annee?: boolean; p_date: string }; Returns: string }
+      nettoyer_reprise: {
+        Args: { p_prefixe: string; p_simulation?: boolean }
+        Returns: Json
+      }
       notifier: {
         Args: {
           p_auteur_inclus?: boolean

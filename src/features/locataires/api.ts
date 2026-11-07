@@ -65,6 +65,8 @@ export interface PaiementDetail {
   motif_annulation: string | null;
   encaisse_par_nom: string;
   mois: string[];
+  /** Montant et remise imputés sur chaque mois (pour libérer ces mois quand on modifie le paiement). */
+  imputations: { mois: string; montant: number; remise: number }[];
   recu: Recu | null;
   /** Paiement repris de l'ancien logiciel (null = saisi dans l'application). */
   reprise: RepriseAccess | null;
@@ -127,6 +129,8 @@ export function useLocataire(id: string | undefined) {
         paiements: (paiements.data ?? []).map((p): PaiementDetail => ({
           ...p,
           encaisse_par_nom: p.encaisseur?.nom_complet ?? '',
+          imputations: (p.imputations as { mois: string; montant: number; remise: number }[])
+            .filter((i) => i.montant > 0 || i.remise > 0),
           mois: (p.imputations as { mois: string; montant: number; remise: number }[])
             .filter((i) => i.montant > 0 || i.remise > 0)
             .map((i) => i.mois)

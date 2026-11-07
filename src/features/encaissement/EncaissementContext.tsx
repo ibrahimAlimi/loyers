@@ -8,7 +8,9 @@ export interface PreRemplissage {
   mode?: ModePaiement;
   payeur?: string;
   reference?: string;
-  remplacePaiementId?: string;
+  date?: string;
+  /** Modification d'un paiement : il est annulé et remplacé à l'enregistrement ; ses mois redeviennent libres. */
+  modification?: { paiementId: string; imputations: { mois: string; montant: number; remise: number }[] };
 }
 
 interface EncaissementContexte {

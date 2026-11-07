@@ -13,7 +13,7 @@ import { ChangerMoisDialog } from '@/features/reprise/ChangerMoisDialog';
 import { useValiderPaiementRepris } from '@/features/reprise/api';
 import type { PaiementDetail } from '@/features/locataires/api';
 
-/** Menu d'un paiement : annuler (ou demander), corriger, corbeille ; changer le mois ou valider un paiement repris. */
+/** Menu d'un paiement : modifier, annuler (ou demander), corbeille ; changer le mois ou valider un paiement repris. */
 export function ActionsPaiement({ paiement }: { paiement: PaiementDetail }) {
   const espace = useEspaceCourant();
   const supprimer = useSupprimer();
@@ -26,19 +26,12 @@ export function ActionsPaiement({ paiement }: { paiement: PaiementDetail }) {
   if (!proprio && !gestionnaire) return null;
   const libelle = `${formatFCFA(paiement.montant)} du ${formatDate(paiement.date_paiement)}`;
 
-  const corriger = async () => {
-    try {
-      const { error } = await supabase.rpc('corriger_paiement', { p_paiement: paiement.id });
-      if (error) throw error;
-      await rafraichirDonnees();
-      ouvrir({
-        bailId: paiement.bail_id, mois: paiement.mois, montant: paiement.montant, mode: paiement.mode,
-        payeur: paiement.payeur, reference: paiement.reference_transaction ?? '', remplacePaiementId: paiement.id,
-      });
-    } catch (e) {
-      notifierErreur(e);
-    }
-  };
+  // Le paiement n'est annulé qu'à l'enregistrement du nouveau : fermer la fenêtre ne change rien
+  const modifier = () => ouvrir({
+    bailId: paiement.bail_id, mois: paiement.mois, montant: paiement.montant, mode: paiement.mode,
+    payeur: paiement.payeur, reference: paiement.reference_transaction ?? '', date: paiement.date_paiement,
+    modification: { paiementId: paiement.id, imputations: paiement.imputations },
+  });
 
   return (
     <>
@@ -56,7 +49,9 @@ export function ActionsPaiement({ paiement }: { paiement: PaiementDetail }) {
               C'est correct
             </Menu.Item>
           )}
-          {proprio && <Menu.Item leftSection={<IconPencil size={16} />} onClick={corriger}>Corriger (annule et ressaisit)</Menu.Item>}
+          {proprio && paiement.statut === 'valide' && (
+            <Menu.Item leftSection={<IconPencil size={16} />} onClick={modifier}>Modifier ce paiement</Menu.Item>
+          )}
           <Menu.Item leftSection={<IconBan size={16} />} color="orange" onClick={() => setAnnulation(true)}>
             {proprio ? 'Annuler ce paiement' : "Demander l'annulation"}
           </Menu.Item>

@@ -80,25 +80,27 @@ export interface Encaissement {
   reste: 'partiel' | 'remise';
   motifRemise: string;
   cle: string;
-  remplace?: string;
+  /** Paiement modifié : annulé et remplacé par celui-ci, en une seule opération. */
+  modifie?: string;
 }
 
 export function useEncaisserMutation() {
   return useMutation({
     mutationFn: async (e: Encaissement): Promise<Recu> => {
-      const { data, error } = await supabase.rpc('encaisser', {
-        p_bail: e.bailId,
+      const commun = {
         p_date: e.date,
         p_montant: e.montant,
         p_mode: e.mode,
         p_reference: e.reference,
         p_payeur: e.payeur,
         p_cle_idempotence: e.cle,
-        p_mois: e.mois.length ? e.mois : null,
+        p_mois: e.mois.length ? e.mois : undefined,
         p_reste: e.reste,
-        p_motif_remise: e.motifRemise || null,
-        p_remplace: e.remplace ?? null,
-      });
+        p_motif_remise: e.motifRemise || undefined,
+      };
+      const { data, error } = e.modifie
+        ? await supabase.rpc('modifier_paiement', { ...commun, p_paiement: e.modifie })
+        : await supabase.rpc('encaisser', { ...commun, p_bail: e.bailId });
       if (error) throw error;
       return data as Recu;
     },
