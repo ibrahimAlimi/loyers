@@ -31,13 +31,33 @@ const listeRecus = (avecRecherche?: string) => (
   <Ecran titre="Reçus" perso>
     <Champ id="recherche" label="Chercher" valeur={avecRecherche} indice="Numéro de reçu ou nom du locataire" />
     <Ligne titre="Koffi Houngbo" sous="DEM-2026-000124 · Octobre 2026"
-      droite={<Group gap={4}><Text fw={700} size="sm">70 000 FCFA</Text><Bouton id="whatsapp" variant="light" couleur="green" icone={IconBrandWhatsapp}>{''}</Bouton><Bouton id="points" variant="subtle" icone={IconDots}>{''}</Bouton></Group>} />
+      droite={<Group gap={4}><Text fw={700} size="sm">70 000 FCFA</Text><Bouton id="recu" variant="light" icone={IconReceipt}>{''}</Bouton></Group>} />
     {!avecRecherche && (
       <>
         <Ligne titre="Awa Sanni" sous="DEM-2026-000123 · Octobre 2026" droite={<Text fw={700} size="sm">45 000 FCFA</Text>} />
         <Ligne titre="Jean Dossou" sous="DEM-2026-000122 · Septembre 2026" droite={<Text fw={700} size="sm">25 000 FCFA</Text>} />
       </>
     )}
+  </Ecran>
+);
+
+const apercuRecu = (duplicata?: boolean) => (
+  <Ecran titre="Reçu N° DEM-2026-000124">
+    <Card data-demo="apercu" withBorder radius="md" padding="xs" style={{ position: 'relative', overflow: 'hidden' }}>
+      <Text fw={800} c="espace" size="sm">Immobilier Démo</Text>
+      <Text size="xs">REÇU N° DEM-2026-000124</Text>
+      {duplicata && <Text size="xs" c="red.8" fw={700}>DUPLICATA, réimprimé le 07/11/2026 à 10:42</Text>}
+      <Text size="xs" mt={4}>Reçu de M. Koffi Houngbo la somme de 70 000 FCFA, loyer de novembre 2026.</Text>
+      {duplicata && (
+        <Text data-demo="filigrane" fw={900} size="28px" c="gray.5" ta="center" mt={4} style={{ transform: 'rotate(-12deg)', border: '3px solid', borderRadius: 8 }}>DUPLICATA</Text>
+      )}
+    </Card>
+    <Bouton id="envoyer-whatsapp" couleur="green" plein icone={IconBrandWhatsapp}>Envoyer sur WhatsApp</Bouton>
+    <SimpleGrid cols={3} spacing={4}>
+      <Bouton id="imprimer" variant="default" icone={IconPrinter}>Imprimer</Bouton>
+      <Bouton variant="default" icone={IconDownload}>PDF</Bouton>
+      <Bouton variant="default" icone={IconPhoto}>Image</Bouton>
+    </SimpleGrid>
   </Ecran>
 );
 
@@ -172,26 +192,11 @@ export const DEMOS: Demo[] = [
     scenes: {
       accueil: () => accueil,
       liste: (e) => listeRecus(e.recherche as string | undefined),
-      format: () => (
-        <Ecran titre="Reçus">
-          <Ligne titre="Koffi Houngbo" sous="DEM-2026-000124 · Novembre 2026" droite={<Text fw={700} size="sm">70 000 FCFA</Text>} />
-          <Card withBorder shadow="md" radius="md" p={4} ml="auto" w={210}>
-            <Stack gap={2}>
-              <Bouton id="image" variant="subtle" icone={IconBrandWhatsapp}>Envoyer sur WhatsApp</Bouton>
-              <Bouton variant="subtle" icone={IconPrinter}>Imprimer</Bouton>
-              <Bouton variant="subtle" icone={IconPhoto}>Télécharger (image)</Bouton>
-            </Stack>
-          </Card>
-        </Ecran>
-      ),
+      apercu: () => apercuRecu(),
       enregistre: () => (
-        <Ecran titre="Reçus">
-          <Card withBorder shadow="md" radius="md" mt="md">
-            <Stack gap="xs">
-              <Text fw={700} size="sm">Reçu prêt à envoyer</Text>
-              <Group gap={6} wrap="nowrap"><IconDownload size={18} /><Text size="sm">Enregistré dans « Téléchargements » : <b>Recu_DEM-2026-000124_Koffi-Houngbo_20261107-101500.jpg</b></Text></Group>
-              <Bouton id="enregistre" couleur="green" plein icone={IconBrandWhatsapp}>Partager sur WhatsApp</Bouton>
-            </Stack>
+        <Ecran titre="Reçu N° DEM-2026-000124">
+          <Card data-demo="enregistre" withBorder radius="md" bg="teal.0" mt="md">
+            <Group gap={6} wrap="nowrap"><IconDownload size={18} /><Text size="sm">Reçu enregistré dans « Téléchargements » : <b>Recu_DEM-2026-000124_Koffi-Houngbo_20261107-101500.jpg</b></Text></Group>
           </Card>
         </Ecran>
       ),
@@ -229,9 +234,9 @@ export const DEMOS: Demo[] = [
     etapes: [
       { scene: 'accueil', doigt: 'recus', geste: 'toucher' },
       { scene: 'liste', doigt: 'recherche', geste: 'montrer', etat: { recherche: 'Koffi' } },
-      { scene: 'liste', doigt: 'whatsapp', geste: 'toucher', etat: { recherche: 'Koffi' } },
-      { scene: 'format', doigt: 'image', geste: 'toucher' },
-      { scene: 'enregistre', doigt: 'enregistre', geste: 'toucher' },
+      { scene: 'liste', doigt: 'recu', geste: 'toucher', etat: { recherche: 'Koffi' } },
+      { scene: 'apercu', doigt: 'envoyer-whatsapp', geste: 'toucher' },
+      { scene: 'enregistre', doigt: 'enregistre', geste: 'montrer' },
       { scene: 'partage', doigt: 'whatsapp-app', geste: 'toucher' },
       { scene: 'contacts', doigt: 'contact', geste: 'toucher' },
       { scene: 'whatsapp', doigt: 'envoyer', geste: 'montrer' },
@@ -241,29 +246,8 @@ export const DEMOS: Demo[] = [
     id: 'reimprimer', titre: 'Réimprimer un reçu', description: 'Le duplicata, daté, sans toucher à l’original.', icone: IconPrinter, personnaliser: true,
     scenes: {
       liste: () => listeRecus('Koffi'),
-      menu: () => (
-        <Ecran titre="Reçus">
-          <Ligne titre="Koffi Houngbo" sous="DEM-2026-000124 · Octobre 2026" droite={<Text fw={700} size="sm">70 000 FCFA</Text>} />
-          <Card withBorder shadow="md" radius="md" p={4} ml="auto" w={200}>
-            <Stack gap={2}>
-              <Bouton variant="subtle">Voir</Bouton>
-              <Bouton id="imprimer" variant="subtle" icone={IconPrinter}>Imprimer</Bouton>
-              <Bouton variant="subtle" icone={IconDownload}>Télécharger</Bouton>
-            </Stack>
-          </Card>
-        </Ecran>
-      ),
-      duplicata: () => (
-        <Ecran titre="Aperçu">
-          <Card withBorder radius="md" style={{ position: 'relative', overflow: 'hidden' }}>
-            <Text fw={800} c="espace">Immobilier Démo</Text>
-            <Text size="xs">REÇU N° DEM-2026-000124</Text>
-            <Text size="xs" c="red.8" fw={700} id="d">DUPLICATA, réimprimé le 27/10/2026 à 10:42</Text>
-            <Text size="sm" mt="xs">Reçu de M. Koffi Houngbo la somme de 70 000 FCFA…</Text>
-            <Text data-demo="filigrane" fw={900} size="34px" c="gray.5" ta="center" mt="md" style={{ transform: 'rotate(-18deg)', border: '3px solid', borderRadius: 8 }}>DUPLICATA</Text>
-          </Card>
-        </Ecran>
-      ),
+      apercu: () => apercuRecu(),
+      duplicata: () => apercuRecu(true),
       notif: () => (
         <Ecran titre="Notifications">
           <Card data-demo="notif" withBorder radius="md" bg="var(--mantine-color-espace-light)">
@@ -274,8 +258,8 @@ export const DEMOS: Demo[] = [
       ),
     },
     etapes: [
-      { scene: 'liste', doigt: 'recherche', geste: 'montrer' },
-      { scene: 'menu', doigt: 'imprimer', geste: 'toucher' },
+      { scene: 'liste', doigt: 'recu', geste: 'toucher' },
+      { scene: 'apercu', doigt: 'imprimer', geste: 'toucher' },
       { scene: 'duplicata', doigt: 'filigrane', geste: 'montrer' },
       { scene: 'notif', doigt: 'notif', geste: 'montrer' },
     ],

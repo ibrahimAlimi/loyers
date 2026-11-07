@@ -15,7 +15,7 @@ import { messageErreur } from '@/lib/erreurs';
 import type { Echeance, ModePaiement, Recu } from '@/lib/types';
 import { MontantInput } from '@/ui/MontantInput';
 import { StatutBadge } from '@/ui/StatutBadge';
-import { BoutonsRecu } from '@/features/recus/ActionsRecu';
+import { ApercuRecu } from '@/features/recus/ActionsRecu';
 import type { PreRemplissage } from './EncaissementContext';
 import { useBauxEncaissables, useEcheances, useEncaisserMutation, type BailEncaissable } from './api';
 
@@ -198,7 +198,7 @@ export default function EncaisserWizard({ pre, onFermer }: { pre?: PreRemplissag
             <Text c="dimmed">
               {formatFCFA(recu.contenu.montant)} · {recu.contenu.mois.map((m) => formatMois(m)).join(', ')}
             </Text>
-            <BoutonsRecu recu={recu} />
+            <ApercuRecu recu={recu} />
           </Stack>
         )}
       </Stack>

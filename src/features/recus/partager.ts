@@ -11,14 +11,23 @@ export interface EtatRecu {
   supprime?: boolean;
 }
 
-// Les PDF générés pendant la session sont réutilisés : envoyer puis imprimer juste après
-// ne crée pas de duplicata. Une nouvelle génération (autre session / rechargement) en crée un.
-const cache = new Map<string, Blob>();
+// Les PDF générés pendant la session sont réutilisés : voir puis envoyer ou imprimer juste après ne crée pas
+// de duplicata. Une nouvelle génération (autre session / rechargement) en crée un. On garde la promesse :
+// deux demandes simultanées ne génèrent qu'une fois.
+const cache = new Map<string, Promise<Blob>>();
 
-async function obtenirPdf(recu: Recu, etat: EtatRecu): Promise<Blob> {
+function obtenirPdf(recu: Recu, etat: EtatRecu): Promise<Blob> {
   const cle = `${recu.id}:${etat.annule ? 'a' : ''}${etat.supprime ? 's' : ''}`;
-  const enCache = cache.get(cle);
-  if (enCache) return enCache;
+  let promesse = cache.get(cle);
+  if (!promesse) {
+    promesse = genererPdf(recu, etat);
+    promesse.catch(() => cache.delete(cle));
+    cache.set(cle, promesse);
+  }
+  return promesse;
+}
+
+async function genererPdf(recu: Recu, etat: EtatRecu): Promise<Blob> {
   const { data, error } = await supabase.rpc('generation_recu', { p_recu: recu.id });
   if (error) throw error;
   const g = data as { original: boolean; reimprime_le?: string };
@@ -28,7 +37,6 @@ async function obtenirPdf(recu: Recu, etat: EtatRecu): Promise<Blob> {
     annule: etat.annule,
     supprime: etat.supprime,
   });
-  cache.set(cle, blob);
   if (!g.original) void rafraichirDonnees();
   return blob;
 }
@@ -64,13 +72,8 @@ export function messageWhatsApp(recu: Recu): string {
   return `Bonjour ${prenom}, voici ${objet}. Merci.`;
 }
 
-export interface EnvoiPret {
-  fichier: File;
-  message: string;
-}
-
 /** Le reçu en image JPEG ou en PDF. Si l'image ne peut pas être créée sur ce téléphone, on donne le PDF. */
-async function fichierRecu(recu: Recu, format: 'pdf' | 'image', etat: EtatRecu): Promise<File> {
+export async function fichierRecu(recu: Recu, format: 'pdf' | 'image', etat: EtatRecu = {}): Promise<File> {
   const pdf = await obtenirPdf(recu, etat);
   if (format === 'image') {
     try {
@@ -78,19 +81,20 @@ async function fichierRecu(recu: Recu, format: 'pdf' | 'image', etat: EtatRecu):
       return new File([image], nomFichier(recu, 'jpg'), { type: 'image/jpeg' });
     } catch (e) {
       console.warn('Reçu en image impossible, PDF à la place', e);
-      notifierSucces('L’image n’a pas pu être créée sur ce téléphone : le reçu est en PDF.');
     }
   }
   return new File([pdf], nomFichier(recu, 'pdf'), { type: 'application/pdf' });
 }
 
 /**
- * Prépare le reçu à envoyer sur WhatsApp, toujours en image (le partage d'un PDF est refusé par Chrome sur
- * Android), et l'enregistre dans le téléphone (dossier « Téléchargements »).
+ * Envoi sur WhatsApp (à appeler directement dans le toucher, avec un fichier déjà prêt) : le reçu est
+ * enregistré dans « Téléchargements » sous un nom unique, puis le partage du téléphone s'ouvre (WhatsApp, puis
+ * le contact). Le message va dans le presse-papiers : Chrome sur Android refuse un fichier partagé avec un texte.
+ * Renvoie null si c'est fait (ou fermé par l'utilisateur), sinon l'erreur du navigateur.
  * Sur iPhone, Safari ne sait pas enregistrer en silence : « Enregistrer dans Fichiers » est dans le menu de partage.
  */
-export async function preparerEnvoi(recu: Recu, etat: EtatRecu = {}): Promise<EnvoiPret> {
-  const fichier = await fichierRecu(recu, 'image', etat);
+export async function envoyerSurWhatsApp(recu: Recu, pret: File): Promise<string | null> {
+  const fichier = new File([pret], nomFichier(recu, pret.type === 'image/jpeg' ? 'jpg' : 'pdf'), { type: pret.type });
   journaliser('partage_recu', {
     espace: recu.espace_id, table: 'recus', id: recu.id, libelle: `Reçu N° ${recu.numero}`,
     details: { format: fichier.type === 'image/jpeg' ? 'image' : 'pdf' },
@@ -99,19 +103,12 @@ export async function preparerEnvoi(recu: Recu, etat: EtatRecu = {}): Promise<En
     telecharger(fichier, fichier.name);
     notifierSucces(`Reçu enregistré dans « Téléchargements » : ${fichier.name}`);
   }
-  return { fichier, message: messageWhatsApp(recu) };
-}
-
-/**
- * Ouvre le partage du téléphone avec le fichier joint (à appeler juste après un toucher) : on touche WhatsApp,
- * puis le contact. Renvoie null si c'est fait (ou fermé par l'utilisateur), sinon l'erreur du navigateur.
- */
-export async function partagerSurWhatsApp(e: EnvoiPret): Promise<string | null> {
-  // Le message va dans le presse-papiers (à coller dans WhatsApp si besoin) : Chrome sur Android refuse souvent
-  // un fichier partagé avec un titre et un texte (« NotAllowedError : Permission denied »).
-  void navigator.clipboard?.writeText(e.message).catch(() => undefined);
+  void navigator.clipboard?.writeText(messageWhatsApp(recu)).catch(() => undefined);
+  if (!navigator.canShare?.({ files: [fichier] })) {
+    return 'Ce navigateur ne sait pas partager de fichier.';
+  }
   try {
-    await navigator.share({ files: [e.fichier] });
+    await navigator.share({ files: [fichier] });
     return null;
   } catch (err) {
     const { name, message } = err as Error;
@@ -123,13 +120,11 @@ export async function partagerSurWhatsApp(e: EnvoiPret): Promise<string | null> 
 
 export async function telechargerRecu(recu: Recu, format: 'pdf' | 'image', etat: EtatRecu = {}) {
   const fichier = await fichierRecu(recu, format, etat);
+  if (format === 'image' && fichier.type !== 'image/jpeg') {
+    notifierSucces('L’image n’a pas pu être créée sur ce téléphone : le reçu est en PDF.');
+  }
   telecharger(fichier, fichier.name);
   if (!IOS) notifierSucces(`Reçu enregistré dans « Téléchargements » : ${fichier.name}`);
-}
-
-export async function voirRecu(recu: Recu, etat: EtatRecu = {}) {
-  const url = URL.createObjectURL(await obtenirPdf(recu, etat));
-  window.open(url, '_blank');
 }
 
 export async function imprimerRecu(recu: Recu, etat: EtatRecu = {}) {
