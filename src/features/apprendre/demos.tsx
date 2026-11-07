@@ -74,7 +74,7 @@ export const DEMOS: Demo[] = [
           <Card withBorder radius="md" padding="xs">
             <Group justify="space-between"><Text fw={600} size="sm">Novembre + Décembre 2026</Text><Text fw={700} size="sm">140 000 FCFA</Text></Group>
           </Card>
-          <Bouton id="autre" variant="subtle">Autre…</Bouton>
+          <Champ id="calendrier" label="Ou choisissez le ou les mois dans le calendrier" indice="Touchez pour ouvrir le calendrier" />
         </Ecran>
       ),
       montant: (e) => (
@@ -105,6 +105,7 @@ export const DEMOS: Demo[] = [
       { scene: 'accueil', doigt: 'encaisser', geste: 'toucher' },
       { scene: 'choix', doigt: 'locataire', geste: 'toucher' },
       { scene: 'mois', doigt: 'mois', geste: 'montrer' },
+      { scene: 'mois', doigt: 'calendrier', geste: 'montrer' },
       { scene: 'montant', doigt: 'montant', geste: 'montrer' },
       { scene: 'montant', doigt: 'mtn', geste: 'toucher', etat: { mode: 'mtn' } },
       { scene: 'montant', doigt: 'date', geste: 'montrer', etat: { mode: 'mtn', date: '05/11/2026' } },

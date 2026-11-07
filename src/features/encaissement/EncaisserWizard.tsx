@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react';
 import {
-  Alert, Button, Card, Checkbox, Group, Loader, Modal, Progress, Radio, ScrollArea, SimpleGrid, Stack, Text,
+  Alert, Button, Card, Group, Loader, Modal, Progress, Radio, ScrollArea, SimpleGrid, Stack, Text,
   TextInput, Textarea, ThemeIcon, Title, UnstyledButton,
 } from '@mantine/core';
-import { DateInput } from '@mantine/dates';
+import { DateInput, MonthPickerInput } from '@mantine/dates';
 import { useMediaQuery } from '@mantine/hooks';
 import {
-  IconArrowLeft, IconArrowRight, IconBuildingBank, IconCash, IconCheck, IconCircleCheck, IconDeviceMobile,
+  IconArrowLeft, IconArrowRight, IconBuildingBank, IconCalendar, IconCash, IconCheck, IconCircleCheck, IconDeviceMobile,
   IconFileInvoice, IconSearch, IconWallet,
 } from '@tabler/icons-react';
 import { aujourdhui, dayjs } from '@/lib/dates';
@@ -276,9 +276,9 @@ function EtapeMois({ bail, echeances, dernierPaye, proposees, chargement, choisi
   onChoisir: (m: string[]) => void;
   total: number;
 }) {
-  const [autre, setAutre] = useState(false);
   if (chargement) return <Loader mx="auto" />;
   const dues = echeances.filter((e) => e.reste > 0);
+  const moisDus = new Set(dues.map((e) => e.mois));
   const anciens = dernierPaye ? dues.filter((e) => e.mois < dernierPaye).length : 0;
   const options = [1, 2, 3].filter((n) => n <= proposees.length).map((n) => proposees.slice(0, n).map((e) => e.mois));
   const libelle = (l: string[]) => l.map((m) => formatMois(m, { majuscule: true })).join(' + ');
@@ -290,11 +290,8 @@ function EtapeMois({ bail, echeances, dernierPaye, proposees, chargement, choisi
         Dernier mois payé : <b>{dernierPaye ? formatMois(dernierPaye) : 'aucun'}</b>
         {' · '}Loyer : <b>{formatFCFA(bail.situation.loyer)}</b>
       </Text>
-      {anciens > 0 && !autre && (
-        <Text size="sm" c="dimmed">{anciens} mois plus ancien{anciens > 1 ? 's' : ''} non payé{anciens > 1 ? 's' : ''} : touchez « Autre… » pour {anciens > 1 ? 'les' : 'le'} choisir.</Text>
-      )}
       {!dues.length && <Alert color="green">Ce locataire est à jour sur les 12 prochains mois.</Alert>}
-      {!autre && options.map((o) => (
+      {options.map((o) => (
         <UnstyledButton key={o.join()} onClick={() => onChoisir(o)}>
           <Card withBorder radius="md" padding="sm"
             style={egal(o, choisis) ? { borderColor: 'var(--mantine-color-espace-filled)', background: 'var(--mantine-color-espace-0)', borderWidth: 2 } : undefined}>
@@ -308,24 +305,24 @@ function EtapeMois({ bail, echeances, dernierPaye, proposees, chargement, choisi
           </Card>
         </UnstyledButton>
       ))}
-      <Button variant="subtle" onClick={() => setAutre((a) => !a)}>{autre ? '← Choix rapides' : 'Autre…'}</Button>
-      {autre && (
-        <ScrollArea.Autosize mah="45vh">
-          <SimpleGrid cols={{ base: 2, sm: 3 }} spacing="xs">
-            {dues.map((e) => (
-              <Checkbox.Card key={e.mois} radius="md" p="sm" checked={choisis.includes(e.mois)}
-                onClick={() => onChoisir(choisis.includes(e.mois) ? choisis.filter((m) => m !== e.mois) : [...choisis, e.mois].sort())}>
-                <Group wrap="nowrap" gap="xs">
-                  <Checkbox.Indicator />
-                  <div>
-                    <Text size="sm" fw={600}>{formatMois(e.mois, { majuscule: true })}</Text>
-                    <Text size="xs" c="dimmed" className="montant">{formatFCFA(e.reste)}{e.statut === 'partiel' ? ' (reste)' : ''}</Text>
-                  </div>
-                </Group>
-              </Checkbox.Card>
-            ))}
-          </SimpleGrid>
-        </ScrollArea.Autosize>
+      {dues.length > 0 && (
+        // Choix libre : n'importe quel mois encore dû, dans le calendrier (plusieurs possibles)
+        <MonthPickerInput
+          type="multiple"
+          label="Ou choisissez le ou les mois dans le calendrier"
+          description={anciens > 0 ? `${anciens} mois plus ancien${anciens > 1 ? 's' : ''} non payé${anciens > 1 ? 's' : ''} : ${anciens > 1 ? 'ils sont' : 'il est'} aussi dans le calendrier.` : undefined}
+          placeholder="Touchez pour ouvrir le calendrier"
+          leftSection={<IconCalendar size={18} />}
+          value={choisis}
+          onChange={(v) => onChoisir([...v].sort())}
+          valueFormat="MMMM YYYY"
+          minDate={dues[0].mois}
+          maxDate={dues[dues.length - 1].mois}
+          defaultDate={choisis[0] ?? dues[0].mois}
+          getMonthControlProps={(d) => ({ disabled: !moisDus.has(dayjs(d).startOf('month').format('YYYY-MM-DD')) })}
+          dropdownType="modal"
+          size="md"
+        />
       )}
       {choisis.length > 0 && <Text ta="right" fw={700}>Total : {formatFCFA(total)}</Text>}
     </Stack>

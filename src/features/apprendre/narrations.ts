@@ -19,7 +19,8 @@ export const NARRATIONS: Record<string, string[]> = {
   encaisser: [
     'Pour encaisser un loyer, touchez « Encaisser un loyer ».',
     'Choisissez le locataire. Ceux qui sont en retard apparaissent en premier.',
-    'L’application propose le mois qui suit le dernier mois payé. Touchez « Autre… » pour choisir d’autres mois.',
+    'L’application propose le mois qui suit le dernier mois payé.',
+    'Pour un autre mois, ou plusieurs, ouvrez le calendrier et touchez les mois voulus.',
     'Le montant dû est déjà rempli. Changez-le si le locataire paie moins, ou d’avance.',
     'Choisissez comment il a payé : espèces, MTN Mobile Money, Moov Money ou Celtiis Cash.',
     'La date du paiement est celle du jour. Pour une autre date, tapez-la, ou choisissez-la dans le calendrier.',
