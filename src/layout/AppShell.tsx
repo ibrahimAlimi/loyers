@@ -8,6 +8,7 @@ import { IconCash, IconHome, IconLogout } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import { Navigate, Outlet, useLocation, useNavigate } from 'react-router';
 import { useAuth } from '@/auth/AuthProvider';
+import { BoutonDeconnexion } from '@/auth/BoutonDeconnexion';
 import { ChoixEspacePage, SelecteurEspace } from '@/espace/SelecteurEspace';
 import { useEspace } from '@/espace/EspaceProvider';
 import { peut } from '@/espace/droits';
@@ -23,7 +24,7 @@ import { NAVIGATION, type EntreeNavigation } from './navigation';
 import { BoutonActualiser } from './BoutonActualiser';
 
 export function AppShell() {
-  const { profil, seDeconnecter } = useAuth();
+  const { profil } = useAuth();
   const { espace, role, chargement, choixRequis, espaces } = useEspace();
   const [ouvert, { toggle, close }] = useDisclosure(false);
   const mobile = useMediaQuery('(max-width: 48em)');
@@ -64,7 +65,7 @@ export function AppShell() {
       <EtatVide
         titre="Aucun espace"
         message="Votre compte n'est rattaché à aucun espace actif. Contactez votre propriétaire ou l'administrateur."
-        action={<Button variant="light" onClick={seDeconnecter}>Se déconnecter</Button>}
+        action={<BoutonDeconnexion variant="light">Se déconnecter</BoutonDeconnexion>}
       />
     );
   }
@@ -148,9 +149,9 @@ export function AppShell() {
               <Text fw={700} size="sm" truncate>{profil?.nom_complet}</Text>
               <Text size="xs" c="dimmed">{LIBELLE_ROLE[roleEffectif ?? ''] ?? ''}</Text>
             </div>
-            <Button variant="subtle" size="xs" color="gray" leftSection={<IconLogout size={16} />} onClick={seDeconnecter}>
+            <BoutonDeconnexion variant="subtle" size="xs" color="gray" leftSection={<IconLogout size={16} />}>
               Quitter
-            </Button>
+            </BoutonDeconnexion>
           </Group>
         </Shell.Section>
       </Shell.Navbar>

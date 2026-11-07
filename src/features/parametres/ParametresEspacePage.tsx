@@ -82,6 +82,10 @@ export function ParametresEspacePage() {
     onError: notifierErreur,
   });
 
+  // Chargement sur le bouton touché (un seul envoi de fichier à la fois)
+  const enCoursPour = (champ: Champ, blob: null) =>
+    fichier.isPending && fichier.variables?.champ === champ && fichier.variables.blob === blob;
+  const [generation, setGeneration] = useState(false);
   const [icones, setIcones] = useState<Record<string, string>>(espace.icones_menu ?? {});
   const logo = useUrlFichier('espaces', espace.logo_path);
   const apparenceModifiee = form.values.couleur_primaire !== espace.couleur_primaire
@@ -167,7 +171,7 @@ export function ParametresEspacePage() {
                 <ApercuImage chemin={espace.logo_path} />
                 <Group mt="md" gap="xs">
                   <ImageUpload libelle="Envoyer un logo" enCours={fichier.isPending} onValider={(blob) => fichier.mutate({ champ: 'logo_path', blob })} />
-                  {espace.logo_path && <Button variant="subtle" color="red" onClick={() => fichier.mutate({ champ: 'logo_path', blob: null })}>Retirer</Button>}
+                  {espace.logo_path && <Button variant="subtle" color="red" loading={enCoursPour('logo_path', null)} disabled={fichier.isPending} onClick={() => fichier.mutate({ champ: 'logo_path', blob: null })}>Retirer</Button>}
                 </Group>
               </Card>
               <Card withBorder radius="lg" padding="lg">
@@ -230,7 +234,8 @@ export function ParametresEspacePage() {
                   <ImageUpload libelle="Envoyer une photo de la signature" retirerFondBlanc
                     onValider={(blob) => fichier.mutate({ champ: 'signature_path', blob })} />
                   {espace.signature_path && (
-                    <Button variant="subtle" color="red" onClick={() => fichier.mutate({ champ: 'signature_path', blob: null })}>
+                    <Button variant="subtle" color="red" loading={enCoursPour('signature_path', null)} disabled={fichier.isPending}
+                      onClick={() => fichier.mutate({ champ: 'signature_path', blob: null })}>
                       Retirer (je signe à la main)
                     </Button>
                   )}
@@ -244,11 +249,20 @@ export function ParametresEspacePage() {
               <Group mt="md" gap="xs">
                 <ImageUpload libelle="Envoyer la photo du cachet" retirerFondBlanc enCours={fichier.isPending}
                   onValider={(blob) => fichier.mutate({ champ: 'cachet_path', blob })} />
-                <Button variant="light" leftSection={<IconStar size={18} />}
-                  onClick={async () => fichier.mutate({ champ: 'cachet_path', blob: await genererCachet(espace.nom, espace.ville, espace.couleur_primaire) })}>
+                <Button variant="light" leftSection={<IconStar size={18} />} loading={generation} disabled={fichier.isPending}
+                  onClick={async () => {
+                    setGeneration(true);
+                    try {
+                      await fichier.mutateAsync({ champ: 'cachet_path', blob: await genererCachet(espace.nom, espace.ville, espace.couleur_primaire) });
+                    } catch {
+                      // erreur déjà affichée par la mutation
+                    } finally {
+                      setGeneration(false);
+                    }
+                  }}>
                   Générer un cachet
                 </Button>
-                {espace.cachet_path && <Button variant="subtle" color="red" onClick={() => fichier.mutate({ champ: 'cachet_path', blob: null })}>Retirer</Button>}
+                {espace.cachet_path && <Button variant="subtle" color="red" loading={enCoursPour('cachet_path', null)} disabled={fichier.isPending} onClick={() => fichier.mutate({ champ: 'cachet_path', blob: null })}>Retirer</Button>}
               </Group>
             </Card>
           </SimpleGrid>

@@ -52,7 +52,12 @@ export function ApercuRecu({ recu, etat }: { recu: Recu; etat?: EtatRecu }) {
   const partager = async () => {
     if (!fichier) return;
     setErreurPartage(null);
-    setErreurPartage(await envoyerSurWhatsApp(recu, fichier));
+    setEnCours('wa');
+    try {
+      setErreurPartage(await envoyerSurWhatsApp(recu, fichier));
+    } finally {
+      setEnCours(null);
+    }
   };
   const icone = (nom: string, i: React.ReactNode) => (enCours === nom ? <Loader size={16} color="currentColor" /> : i);
 
@@ -68,7 +73,8 @@ export function ApercuRecu({ recu, etat }: { recu: Recu; etat?: EtatRecu }) {
       ) : (
         <Center h={200}><Stack align="center" gap="xs"><Loader /><Text size="sm" c="dimmed">Préparation du reçu…</Text></Stack></Center>
       )}
-      <Button color="green" size="md" leftSection={<IconBrandWhatsapp size={20} />} disabled={!fichier} onClick={partager}>
+      <Button color="green" size="md" leftSection={<IconBrandWhatsapp size={20} />} disabled={!fichier || !!enCours}
+        loading={enCours === 'wa'} onClick={partager}>
         Envoyer sur WhatsApp
       </Button>
       {erreurPartage ? (

@@ -35,7 +35,7 @@ export function Cloche() {
       <Group justify="space-between" px="sm" py="xs" style={{ borderBottom: '1px solid var(--mantine-color-gray-2)' }}>
         <Text fw={800}>Notifications</Text>
         <Group gap={4}>
-          <Button size="xs" variant="subtle" leftSection={<IconChecks size={16} />} disabled={!nonLues}
+          <Button size="xs" variant="subtle" leftSection={<IconChecks size={16} />} disabled={!nonLues} loading={marquer.isPending}
             onClick={() => marquer.mutate(null)}>Tout marquer comme lu</Button>
           <ActionIcon variant="subtle" color="gray" aria-label="Régler mes notifications" onClick={() => { close(); navigate('/profil#notifications'); }}>
             <IconSettings size={18} />

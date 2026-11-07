@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Badge, Button, Card, CloseButton, Group, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 import { IconCheck, IconPhoto, IconPhone, IconSignature, IconStar } from '@tabler/icons-react';
 import { useNavigate } from 'react-router';
@@ -21,6 +22,7 @@ export function CompleterEspace() {
   const espace = useEspaceCourant();
   const { profil, rechargerProfil } = useAuth();
   const navigate = useNavigate();
+  const [enCours, setEnCours] = useState<string | null>(null);
   if (!peut('parametres_espace', espace.role) || !profil) return null;
 
   const prefs = (profil.preferences ?? {}) as { rappels_ecartes?: Record<string, Cle[] | 'tout'> };
@@ -36,11 +38,13 @@ export function CompleterEspace() {
   const restants = ELEMENTS.filter((e) => !fait[e.cle] && !(ecartes ?? []).includes(e.cle));
   if (!restants.length) return null;
 
-  const ecarter = async (valeur: Cle[] | 'tout') => {
+  const ecarter = async (valeur: Cle[] | 'tout', bouton: string) => {
+    setEnCours(bouton);
     const nouvelles = { ...prefs, rappels_ecartes: { ...(prefs.rappels_ecartes ?? {}), [espace.id]: valeur } };
     const { error } = await supabase.from('profils').update({ preferences: nouvelles }).eq('id', profil.id);
     if (error) notifierErreur(error);
     else await rechargerProfil();
+    setEnCours(null);
   };
 
   return (
@@ -50,7 +54,7 @@ export function CompleterEspace() {
           <Title order={3} size="h4">Complétez votre espace</Title>
           <Text size="sm" c="dimmed">Pour des reçus encore plus professionnels. Rien n'est obligatoire.</Text>
         </div>
-        <CloseButton aria-label="Masquer ce rappel" onClick={() => ecarter('tout')} />
+        <CloseButton aria-label="Masquer ce rappel" disabled={!!enCours} onClick={() => ecarter('tout', 'tout')} />
       </Group>
       <Stack gap="sm" mt="sm">
         {restants.map((e) => (
@@ -68,7 +72,8 @@ export function CompleterEspace() {
             <Group gap="xs">
               <Button size="xs" onClick={() => navigate(`/parametres?onglet=${e.onglet}`)}>Ajouter</Button>
               <Button size="xs" variant="subtle" color="gray" leftSection={<IconCheck size={14} />}
-                onClick={() => ecarter([...((ecartes as Cle[] | undefined) ?? []), e.cle])}>
+                loading={enCours === e.cle} disabled={!!enCours}
+                onClick={() => ecarter([...((ecartes as Cle[] | undefined) ?? []), e.cle], e.cle)}>
                 {e.pasBesoin}
               </Button>
             </Group>

@@ -5,11 +5,12 @@ import { useNavigate } from 'react-router';
 import { supabase } from '@/lib/supabase';
 import { messageErreur } from '@/lib/erreurs';
 import { useAuth } from './AuthProvider';
+import { BoutonDeconnexion } from './BoutonDeconnexion';
 import { journaliser } from '@/lib/audit';
 
 /** Saisie du code à 6 chiffres (session déjà protégée par la double authentification). */
 export function SaisieCodePage() {
-  const { seDeconnecter, rechargerNiveau } = useAuth();
+  const { rechargerNiveau } = useAuth();
   const navigate = useNavigate();
   const [code, setCode] = useState('');
   const [erreur, setErreur] = useState<string | null>(null);
@@ -44,14 +45,14 @@ export function SaisieCodePage() {
           onChange={setCode} onComplete={(v) => void valider(v)} disabled={envoi} />
       </Center>
       <Button onClick={() => valider()} loading={envoi} disabled={code.length !== 6}>Valider</Button>
-      <Button variant="subtle" color="gray" onClick={seDeconnecter}>Se déconnecter</Button>
+      <BoutonDeconnexion variant="subtle" color="gray">Se déconnecter</BoutonDeconnexion>
     </Cadre>
   );
 }
 
 /** Activation de la double authentification (obligatoire pour le super admin). */
 export function ActivationDoubleAuthPage() {
-  const { profil, rechargerNiveau, seDeconnecter } = useAuth();
+  const { profil, rechargerNiveau } = useAuth();
   const navigate = useNavigate();
   return (
     <Cadre
@@ -61,7 +62,7 @@ export function ActivationDoubleAuthPage() {
         : 'Ajoutez un code de sécurité à votre connexion.'}
     >
       <EnrolementTotp onTermine={async () => { await rechargerNiveau(); navigate('/', { replace: true }); }} />
-      <Button variant="subtle" color="gray" onClick={seDeconnecter}>Se déconnecter</Button>
+      <BoutonDeconnexion variant="subtle" color="gray">Se déconnecter</BoutonDeconnexion>
     </Cadre>
   );
 }
