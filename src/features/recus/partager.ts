@@ -1,5 +1,4 @@
 import { supabase } from '@/lib/supabase';
-import { lienWhatsApp } from '@/lib/telephone';
 import { formatMois } from '@/lib/format';
 import { rafraichirDonnees } from '@/lib/queryClient';
 import type { Recu } from '@/lib/types';
@@ -94,12 +93,19 @@ export async function preparerEnvoi(recu: Recu, format: 'pdf' | 'image', etat: E
   return { fichier, message: messageWhatsApp(recu), titre: `Reçu ${recu.numero}` };
 }
 
-/** Ouvre le partage du téléphone avec le fichier joint (à appeler juste après un toucher) : on touche WhatsApp, puis le contact. */
-export async function partagerSurWhatsApp(e: EnvoiPret) {
+/**
+ * Ouvre le partage du téléphone avec le fichier joint (à appeler juste après un toucher) : on touche WhatsApp,
+ * puis le contact. Renvoie null si c'est fait (ou fermé par l'utilisateur), sinon l'erreur du navigateur.
+ */
+export async function partagerSurWhatsApp(e: EnvoiPret): Promise<string | null> {
   try {
     await navigator.share({ files: [e.fichier], text: e.message, title: e.titre });
+    return null;
   } catch (err) {
-    if ((err as Error).name !== 'AbortError') window.open(lienWhatsApp(null, e.message), '_blank');
+    const { name, message } = err as Error;
+    if (name === 'AbortError') return null;
+    console.warn('Partage du reçu refusé par le navigateur', err);
+    return `${name} : ${message}`;
   }
 }
 

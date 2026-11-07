@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ActionIcon, Button, Loader, Menu, Modal, SimpleGrid, Stack, Text, Tooltip } from '@mantine/core';
+import { ActionIcon, Alert, Button, Loader, Menu, Modal, SimpleGrid, Stack, Text, Tooltip } from '@mantine/core';
 import { IconBrandWhatsapp, IconDownload, IconEye, IconPhoto, IconPrinter, IconReceipt } from '@tabler/icons-react';
 import { notifierErreur } from '@/lib/erreurs';
 import { lienWhatsApp } from '@/lib/telephone';
@@ -30,31 +30,49 @@ function useAction() {
  */
 function useEnvoi() {
   const [pret, setPret] = useState<EnvoiPret | null>(null);
-  const envoyer = async (recu: Recu, format: 'pdf' | 'image', etat?: EtatRecu) => setPret(await preparerEnvoi(recu, format, etat));
+  const [envoi, setEnvoi] = useState(false);
+  const [erreur, setErreur] = useState<string | null>(null);
+  const envoyer = async (recu: Recu, format: 'pdf' | 'image', etat?: EtatRecu) => {
+    setErreur(null);
+    setPret(await preparerEnvoi(recu, format, etat));
+  };
+  const fermer = () => { setPret(null); setErreur(null); };
+  const partager = async () => {
+    if (!pret) return;
+    setEnvoi(true);
+    const e = await partagerSurWhatsApp(pret);   // appelé directement dans le toucher : sinon le navigateur refuse
+    setEnvoi(false);
+    if (e) setErreur(e);
+    else fermer();
+  };
   const partageFichier = !!pret && !!navigator.canShare?.({ files: [pret.fichier] });
   const fenetre = pret && (
-    <Modal opened onClose={() => setPret(null)} title="Reçu prêt à envoyer" centered>
+    <Modal opened onClose={fermer} title="Reçu prêt à envoyer" centered>
       <Stack>
         <Text size="sm">
           {IOS ? 'Le reçu est prêt.' : <>Le reçu est enregistré dans « Téléchargements » : <b>{pret.fichier.name}</b></>}
         </Text>
-        {partageFichier ? (
-          <Button color="green" size="md" leftSection={<IconBrandWhatsapp size={20} />}
-            onClick={() => { void partagerSurWhatsApp(pret); setPret(null); }}>
-            Partager sur WhatsApp
-          </Button>
-        ) : (
-          // Sans partage de fichier (ordinateur, ancien navigateur) : un vrai lien, jamais bloqué
-          <Button component="a" href={lienWhatsApp(null, pret.message)} target="_blank" rel="noopener noreferrer"
-            color="green" size="md" leftSection={<IconBrandWhatsapp size={20} />} onClick={() => setPret(null)}>
-            Ouvrir WhatsApp
-          </Button>
+        {partageFichier && !erreur && (
+          <>
+            <Button color="green" size="md" leftSection={<IconBrandWhatsapp size={20} />} loading={envoi} onClick={partager}>
+              Partager sur WhatsApp
+            </Button>
+            <Text size="xs" c="dimmed">Dans le menu qui s’ouvre, touchez WhatsApp, puis choisissez le contact.</Text>
+          </>
         )}
-        <Text size="xs" c="dimmed">
-          {partageFichier
-            ? 'Dans le menu qui s’ouvre, touchez WhatsApp, puis choisissez le contact.'
-            : 'Choisissez le contact, puis joignez le reçu avec le trombone 📎 (il est dans « Téléchargements »).'}
-        </Text>
+        {erreur && (
+          <Alert color="orange" title="Le téléphone n’a pas ouvert le partage">
+            <Text size="sm">Utilisez « Ouvrir WhatsApp » ci-dessous, puis joignez le reçu avec le trombone 📎.</Text>
+            <Text size="xs" c="dimmed" mt={4}>Détail : {erreur}</Text>
+          </Alert>
+        )}
+        {/* Toujours disponible : un simple lien, que le téléphone ne bloque jamais */}
+        <Button component="a" href={lienWhatsApp(null, pret.message)} target="_blank" rel="noopener noreferrer"
+          variant={partageFichier && !erreur ? 'light' : 'filled'} color="green" size="md"
+          leftSection={<IconBrandWhatsapp size={20} />} onClick={fermer}>
+          Ouvrir WhatsApp
+        </Button>
+        <Text size="xs" c="dimmed">« Ouvrir WhatsApp » : choisissez le contact, puis joignez le reçu avec le trombone 📎 (il est dans « Téléchargements »).</Text>
       </Stack>
     </Modal>
   );
