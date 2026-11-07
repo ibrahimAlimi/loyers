@@ -40,11 +40,16 @@ export function CompleterEspace() {
 
   const ecarter = async (valeur: Cle[] | 'tout', bouton: string) => {
     setEnCours(bouton);
-    const nouvelles = { ...prefs, rappels_ecartes: { ...(prefs.rappels_ecartes ?? {}), [espace.id]: valeur } };
-    const { error } = await supabase.from('profils').update({ preferences: nouvelles }).eq('id', profil.id);
-    if (error) notifierErreur(error);
-    else await rechargerProfil();
-    setEnCours(null);
+    try {
+      const nouvelles = { ...prefs, rappels_ecartes: { ...(prefs.rappels_ecartes ?? {}), [espace.id]: valeur } };
+      const { error } = await supabase.from('profils').update({ preferences: nouvelles }).eq('id', profil.id);
+      if (error) throw error;
+      await rechargerProfil();
+    } catch (e) {
+      notifierErreur(e);
+    } finally {
+      setEnCours(null);   // le bouton redevient utilisable, même en cas d'erreur
+    }
   };
 
   return (
