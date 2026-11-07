@@ -40,7 +40,7 @@ const nomFichier = (recu: Recu, ext: string) => {
     .replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '');
   return `Recu_${recu.numero}${nom ? `_${nom}` : ''}.${ext}`;
 };
-const IOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+export const IOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 function telecharger(blob: Blob, nom: string) {
   const url = URL.createObjectURL(blob);
@@ -62,32 +62,46 @@ export function messageWhatsApp(recu: Recu): string {
   return `Bonjour ${prenom}, voici ${objet}. Merci.`;
 }
 
+export interface EnvoiPret {
+  fichier: File;
+  message: string;
+  titre: string;
+}
+
 /**
- * Envoi sur WhatsApp : le reçu est d'abord enregistré dans le téléphone (dossier « Téléchargements »),
- * puis WhatsApp s'ouvre et l'utilisateur choisit lui-même le contact.
+ * Prépare le reçu à envoyer (PDF ou image) et l'enregistre dans le téléphone (dossier « Téléchargements »).
  * Sur iPhone, Safari ne sait pas enregistrer en silence : « Enregistrer dans Fichiers » est dans le menu de partage.
  */
-export async function partagerRecu(recu: Recu, format: 'pdf' | 'image', etat: EtatRecu = {}) {
+export async function preparerEnvoi(recu: Recu, format: 'pdf' | 'image', etat: EtatRecu = {}): Promise<EnvoiPret> {
   const pdf = await obtenirPdf(recu, etat);
   const blob = format === 'pdf' ? pdf : await (await import('./pdf/genererPdf')).recuEnImage(pdf);
   const fichier = new File([blob], nomFichier(recu, format === 'pdf' ? 'pdf' : 'jpg'), { type: blob.type });
-  const message = messageWhatsApp(recu);
   journaliser('partage_recu', { espace: recu.espace_id, table: 'recus', id: recu.id, libelle: `Reçu N° ${recu.numero}`, details: { format } });
   if (!IOS) {
     telecharger(blob, fichier.name);
     notifierSucces(`Reçu enregistré dans « Téléchargements » : ${fichier.name}`);
   }
-  // Menu de partage avec le fichier joint : on touche WhatsApp, puis on choisit le contact
-  if (navigator.canShare?.({ files: [fichier] })) {
+  return { fichier, message: messageWhatsApp(recu), titre: `Reçu ${recu.numero}` };
+}
+
+/**
+ * Ouvre le partage du téléphone avec le fichier joint : on touche WhatsApp, puis on choisit le contact.
+ * Le navigateur ne l'autorise que juste après un toucher : renvoie false s'il a refusé pour cette raison
+ * (il faut alors proposer un bouton à toucher).
+ */
+export async function partagerSurWhatsApp(e: EnvoiPret): Promise<boolean> {
+  if (navigator.canShare?.({ files: [e.fichier] })) {
     try {
-      await navigator.share({ files: [fichier], text: message, title: `Reçu ${recu.numero}` });
-      return;
-    } catch (e) {
-      if ((e as Error).name === 'AbortError') return;
+      await navigator.share({ files: [e.fichier], text: e.message, title: e.titre });
+      return true;
+    } catch (err) {
+      const nom = (err as Error).name;
+      if (nom === 'AbortError') return true;      // l'utilisateur a fermé le menu de partage
+      if (nom === 'NotAllowedError') return false; // plus de toucher récent
     }
   }
-  // Sinon WhatsApp s'ouvre sur la liste des contacts, avec le message ; le fichier se joint avec le trombone
-  window.open(lienWhatsApp(null, message), '_blank');
+  // Sans partage de fichier : WhatsApp s'ouvre sur la liste des contacts ; le fichier se joint avec le trombone
+  return window.open(lienWhatsApp(null, e.message), '_blank') !== null;
 }
 
 export async function telechargerRecu(recu: Recu, etat: EtatRecu = {}) {
