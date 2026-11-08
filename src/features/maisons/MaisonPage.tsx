@@ -5,7 +5,7 @@ import { IconDots, IconEdit, IconKey, IconPlus, IconTrash } from '@tabler/icons-
 import { useNavigate, useParams } from 'react-router';
 import { useEspaceCourant } from '@/espace/EspaceProvider';
 import { peut } from '@/espace/droits';
-import { formatLoyer, LIBELLE_TYPE_LOGEMENT } from '@/lib/format';
+import { formatFCFA, LIBELLE_TYPE_LOGEMENT } from '@/lib/format';
 import { PageEntete } from '@/layout/PageEntete';
 import { EtatVide } from '@/ui/EtatVide';
 import { StatutBadge } from '@/ui/StatutBadge';
@@ -122,7 +122,7 @@ export function MaisonPage() {
                   <Text fw={700}>{l.designation}</Text>
                   <Text size="sm" c="dimmed">
                     {[voir('type') && LIBELLE_TYPE_LOGEMENT[l.type], voir('niveau') && l.niveau,
-                      voir('loyer') && formatLoyer(l.situation?.loyer ?? l.loyer_reference ?? 0, l.situation?.entretien)].filter(Boolean).join(' · ')}
+                      voir('loyer') && formatFCFA(l.situation?.loyer ?? l.loyer_reference ?? 0)].filter(Boolean).join(' · ')}
                   </Text>
                   {voir('locataire') && occupant(l)}
                 </Stack>
@@ -146,7 +146,7 @@ export function MaisonPage() {
                   <Table.Td fw={600}>{l.designation}</Table.Td>
                   {voir('type') && <Table.Td>{LIBELLE_TYPE_LOGEMENT[l.type]}</Table.Td>}
                   {voir('niveau') && <Table.Td>{l.niveau ?? '—'}</Table.Td>}
-                  {voir('loyer') && <Table.Td className="montant">{formatLoyer(l.situation?.loyer ?? l.loyer_reference ?? 0, l.situation?.entretien)}</Table.Td>}
+                  {voir('loyer') && <Table.Td className="montant">{formatFCFA(l.situation?.loyer ?? l.loyer_reference ?? 0)}</Table.Td>}
                   {voir('locataire') && <Table.Td>{occupant(l)}</Table.Td>}
                   <Table.Td>{actionsLogement(l)}</Table.Td>
                 </Table.Tr>

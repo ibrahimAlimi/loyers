@@ -9,7 +9,7 @@ import type { ModePaiement } from '@/lib/types';
 import { MontantInput } from '@/ui/MontantInput';
 import { useEncaisser } from '@/features/encaissement/EncaissementContext';
 import { useEnregistrerLocataire, useLocataires } from '@/features/locataires/api';
-import { useCreerBail, useEntretienHabituel, useLogementsLibres, useMouvementCaution } from './api';
+import { useCreerBail, useLogementsLibres, useMouvementCaution } from './api';
 
 const MODES = Object.entries(LIBELLE_MODE).map(([value, label]) => ({ value, label }));
 
@@ -21,7 +21,6 @@ export function BailForm({ opened, onClose, logementId, locataireId }: {
   locataireId?: string;
 }) {
   const { data: libres = [] } = useLogementsLibres();
-  const { data: entretienHabituel } = useEntretienHabituel();
   const { data: lignes = [] } = useLocataires();
   const creerBail = useCreerBail();
   const creerLocataire = useEnregistrerLocataire();
@@ -43,7 +42,6 @@ export function BailForm({ opened, onClose, logementId, locataireId }: {
       date_debut: aujourdhui(),
       jour_echeance: 1,
       loyer: null as number | null,
-      entretien: null as number | null,
       premier_mois_montant: null as number | null,
       caution_montant: null as number | null,
       caution_versee: true,
@@ -66,16 +64,8 @@ export function BailForm({ opened, onClose, logementId, locataireId }: {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.values.logement_id, libres]);
 
-  // Entretien proposé : celui des autres baux de l'espace
-  useEffect(() => {
-    if (entretienHabituel != null && form.values.entretien == null) form.setFieldValue('entretien', entretienHabituel);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [entretienHabituel]);
-
-  // Montant dû chaque mois : loyer + entretien
-  const mensuel = (form.values.loyer ?? 0) + (form.values.entretien ?? 0);
   const debutEnCoursDeMois = !!form.values.date_debut && dayjs(form.values.date_debut).date() !== 1;
-  const premierMois = debutEnCoursDeMois ? (form.values.premier_mois_montant ?? mensuel) : mensuel;
+  const premierMois = debutEnCoursDeMois ? (form.values.premier_mois_montant ?? form.values.loyer ?? 0) : (form.values.loyer ?? 0);
 
   const valider = form.onSubmit(async (v) => {
     try {
@@ -89,8 +79,7 @@ export function BailForm({ opened, onClose, logementId, locataireId }: {
         date_debut: dayjs(v.date_debut).format('YYYY-MM-DD'),
         jour_echeance: v.jour_echeance,
         loyer: v.loyer!,
-        entretien: v.entretien ?? 0,
-        premier_mois_montant: debutEnCoursDeMois && v.premier_mois_montant != null && v.premier_mois_montant !== mensuel
+        premier_mois_montant: debutEnCoursDeMois && v.premier_mois_montant != null && v.premier_mois_montant !== v.loyer
           ? v.premier_mois_montant : null,
         caution_montant: v.caution_montant ?? 0,
       });
@@ -102,7 +91,7 @@ export function BailForm({ opened, onClose, logementId, locataireId }: {
       if (v.avance_mois > 0) {
         const debut = premierDuMois(v.date_debut);
         const mois = Array.from({ length: v.avance_mois }, (_, i) => ajouterMois(debut, i));
-        ouvrirEncaissement({ bailId, mois, montant: premierMois + mensuel * (v.avance_mois - 1) });
+        ouvrirEncaissement({ bailId, mois, montant: premierMois + (v.loyer ?? 0) * (v.avance_mois - 1) });
       }
     } catch (e) {
       notifierErreur(e);
@@ -147,10 +136,8 @@ export function BailForm({ opened, onClose, logementId, locataireId }: {
           <SimpleGrid cols={{ base: 1, sm: 2 }}>
             <DateInput label="Date d'entrée" {...form.getInputProps('date_debut')} />
             <NumberInput label="Jour de paiement chaque mois" min={1} max={28} {...form.getInputProps('jour_echeance')} />
-            <MontantInput label="Loyer mensuel (sans l'entretien)" value={form.values.loyer} onChange={(n) => form.setFieldValue('loyer', n)}
+            <MontantInput label="Loyer mensuel" value={form.values.loyer} onChange={(n) => form.setFieldValue('loyer', n)}
               error={form.errors.loyer} />
-            <MontantInput label="Entretien mensuel" description={mensuel ? `Payé chaque mois : ${formatFCFA(mensuel)}` : undefined}
-              value={form.values.entretien} zeroAutorise onChange={(n) => form.setFieldValue('entretien', n)} />
             <TextInput label="Référence du contrat (facultatif)" placeholder="Ex. BAIL-ARO-002" {...form.getInputProps('reference')} />
           </SimpleGrid>
 
@@ -158,7 +145,7 @@ export function BailForm({ opened, onClose, logementId, locataireId }: {
             <MontantInput
               label="Montant du premier mois"
               description="Le premier mois est dû en entier. Modifiez seulement si un montant a été négocié."
-              value={form.values.premier_mois_montant ?? mensuel}
+              value={form.values.premier_mois_montant ?? form.values.loyer}
               zeroAutorise
               onChange={(n) => form.setFieldValue('premier_mois_montant', n)}
             />
@@ -180,7 +167,7 @@ export function BailForm({ opened, onClose, logementId, locataireId }: {
           {form.values.avance_mois > 0 && (
             <Alert color="blue">
               Après l'enregistrement, l'encaissement de l'avance s'ouvrira avec {form.values.avance_mois} mois pré-sélectionnés
-              ({formatFCFA(premierMois + mensuel * (form.values.avance_mois - 1))}).
+              ({formatFCFA(premierMois + (form.values.loyer ?? 0) * (form.values.avance_mois - 1))}).
             </Alert>
           )}
 

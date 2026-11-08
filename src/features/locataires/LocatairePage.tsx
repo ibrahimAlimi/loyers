@@ -9,7 +9,7 @@ import {
 import { useNavigate, useParams } from 'react-router';
 import { useEspaceCourant } from '@/espace/EspaceProvider';
 import { peut } from '@/espace/droits';
-import { formatDate, formatFCFA, formatLoyer, formatMois, LIBELLE_MODE } from '@/lib/format';
+import { formatDate, formatFCFA, formatMois, LIBELLE_MODE } from '@/lib/format';
 import { aujourdhui, premierDuMois } from '@/lib/dates';
 import { notifierErreur, notifierSucces } from '@/lib/erreurs';
 import { lienWhatsApp } from '@/lib/telephone';
@@ -102,7 +102,7 @@ export function LocatairePage() {
             <Group justify="space-between" align="flex-start" mb="sm">
               <div>
                 <Text fw={800} size="lg">{b.logement.maison.nom} · {b.logement.designation}</Text>
-                <Text size="sm" c="dimmed">Loyer {formatLoyer(b.situation?.loyer ?? b.loyer, b.entretien)} / mois · depuis le {formatDate(b.date_debut)}</Text>
+                <Text size="sm" c="dimmed">Loyer {formatFCFA(b.situation?.loyer ?? b.loyer)} / mois · depuis le {formatDate(b.date_debut)}</Text>
               </div>
               {b.situation && <StatutBadge statut={b.situation.statut} nbMois={b.situation.nb_mois_retard} />}
             </Group>
@@ -278,8 +278,7 @@ function RevisionDialog({ bail, onClose }: { bail: BailDetail; onClose: () => vo
     <Modal opened onClose={onClose} title="Changer le loyer">
       <Stack>
         <MonthPickerInput label="À partir du mois de" value={mois} onChange={setMois} valueFormat="MMMM YYYY" />
-        <MontantInput label={bail.entretien ? `Nouveau loyer mensuel (sans les ${formatFCFA(bail.entretien)} d'entretien)` : 'Nouveau loyer mensuel'}
-          value={montant} onChange={setMontant} />
+        <MontantInput label="Nouveau loyer mensuel" value={montant} onChange={setMontant} />
         <Text size="sm" c="dimmed">Les mois précédents gardent l'ancien montant.</Text>
         <Group justify="flex-end">
           <Button variant="default" onClick={onClose}>Annuler</Button>

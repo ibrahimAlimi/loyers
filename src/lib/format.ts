@@ -8,10 +8,6 @@ export const formatNombre = (n: number): string => nombre.format(n).replace(/[ 
 /** 70000 → « 70 000 FCFA ». */
 export const formatFCFA = (n: number | null | undefined): string => `${formatNombre(n ?? 0)} FCFA`;
 
-/** « 60 000 FCFA + 5 000 FCFA d'entretien » (ou le loyer seul, sans entretien). */
-export const formatLoyer = (loyer: number | null | undefined, entretien?: number | null): string =>
-  entretien ? `${formatFCFA(loyer)} + ${formatFCFA(entretien)} d'entretien` : formatFCFA(loyer);
-
 const majuscule = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 /** « juillet 2026 » (ou « Juillet 2026 »). */

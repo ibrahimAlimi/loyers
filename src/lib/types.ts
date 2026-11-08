@@ -83,10 +83,7 @@ export interface Bail {
   date_debut: string;
   date_fin: string | null;
   jour_echeance: number;
-  /** Loyer sans l'entretien. */
   loyer: number;
-  /** Entretien payé chaque mois en plus du loyer. */
-  entretien: number;
   premier_mois_montant: number | null;
   caution_montant: number;
   actif: boolean;
@@ -102,7 +99,6 @@ export interface SituationBail {
   date_debut: string;
   date_fin: string | null;
   loyer: number;
-  entretien: number;
   dernier_mois_solde: string | null;
   prochain_mois_du: string | null;
   nb_mois_dus: number;

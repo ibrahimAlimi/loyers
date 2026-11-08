@@ -5,7 +5,7 @@ import { IconChevronRight, IconSearch, IconUserPlus, IconUsers } from '@tabler/i
 import { useNavigate } from 'react-router';
 import { useEspaceCourant } from '@/espace/EspaceProvider';
 import { peut } from '@/espace/droits';
-import { formatFCFA, formatLoyer } from '@/lib/format';
+import { formatFCFA } from '@/lib/format';
 import { PageEntete } from '@/layout/PageEntete';
 import { EtatVide } from '@/ui/EtatVide';
 import { StatutBadge } from '@/ui/StatutBadge';
@@ -107,7 +107,7 @@ export function LocatairesPage() {
                 )}
                 {(voir('telephone') && l.locataire.telephone) || (voir('loyer') && l.bail) ? (
                   <Text size="sm" c="dimmed" truncate>
-                    {[voir('telephone') && l.locataire.telephone, voir('loyer') && l.bail && `${formatLoyer(l.situation?.loyer ?? l.bail.loyer, l.bail.entretien)} / mois`]
+                    {[voir('telephone') && l.locataire.telephone, voir('loyer') && l.bail && `${formatFCFA(l.situation?.loyer ?? l.bail.loyer)} / mois`]
                       .filter(Boolean).join(' · ')}
                   </Text>
                 ) : null}

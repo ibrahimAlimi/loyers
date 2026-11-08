@@ -10,7 +10,7 @@ import {
   IconFileInvoice, IconSearch, IconWallet,
 } from '@tabler/icons-react';
 import { aujourdhui, dayjs } from '@/lib/dates';
-import { formatFCFA, formatLoyer, formatMois, LIBELLE_MODE } from '@/lib/format';
+import { formatFCFA, formatMois, LIBELLE_MODE } from '@/lib/format';
 import { messageErreur } from '@/lib/erreurs';
 import type { Echeance, ModePaiement, Recu } from '@/lib/types';
 import { MontantInput } from '@/ui/MontantInput';
@@ -288,7 +288,7 @@ function EtapeMois({ bail, echeances, dernierPaye, proposees, chargement, choisi
     <Stack gap="xs">
       <Text c="dimmed">
         Dernier mois payé : <b>{dernierPaye ? formatMois(dernierPaye) : 'aucun'}</b>
-        {' · '}Loyer : <b>{formatLoyer(bail.situation.loyer, bail.situation.entretien)}</b>
+        {' · '}Loyer : <b>{formatFCFA(bail.situation.loyer)}</b>
       </Text>
       {!dues.length && <Alert color="green">Ce locataire est à jour sur les 12 prochains mois.</Alert>}
       {options.map((o) => (
