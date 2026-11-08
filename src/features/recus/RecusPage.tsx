@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Badge, Card, Group, Pagination, SegmentedControl, Skeleton, Stack, Table, Text, TextInput } from '@mantine/core';
-import { DatePickerInput } from '@mantine/dates';
+import { DatePickerInput, MonthPickerInput } from '@mantine/dates';
 import { useDebouncedValue, useMediaQuery } from '@mantine/hooks';
 import { IconReceipt, IconSearch } from '@tabler/icons-react';
 import { dayjs } from '@/lib/dates';
@@ -30,6 +30,7 @@ export function RecusPage() {
   const [rechercheDiff] = useDebouncedValue(recherche, 300);
   const [type, setType] = useState('tous');
   const [periode, setPeriode] = useState<[string | null, string | null]>([null, null]);
+  const [moisPayes, setMoisPayes] = useState<[string | null, string | null]>([null, null]);
   const [page, setPage] = useState(0);
   const affichage = useAffichage('recus', [], COLONNES);
   const voir = affichage.colonne;
@@ -38,6 +39,8 @@ export function RecusPage() {
     type: type === 'tous' ? null : type,
     debut: periode[0] ? dayjs(periode[0]).format('YYYY-MM-DD') : null,
     fin: periode[1] ? dayjs(periode[1]).format('YYYY-MM-DD') : null,
+    moisDebut: moisPayes[0] ? dayjs(moisPayes[0]).format('YYYY-MM-01') : null,
+    moisFin: moisPayes[1] ? dayjs(moisPayes[1]).format('YYYY-MM-01') : null,
     page,
   });
 
@@ -54,11 +57,13 @@ export function RecusPage() {
       <Stack gap="sm" mb="md">
         <TextInput leftSection={<IconSearch size={18} />} placeholder="Numéro de reçu ou nom du locataire"
           value={recherche} onChange={(e) => { setRecherche(e.currentTarget.value); setPage(0); }} />
-        <Group gap="sm">
+        <Group gap="sm" align="flex-end">
           <SegmentedControl value={type} onChange={(v) => { setType(v); setPage(0); }}
             data={[{ value: 'tous', label: 'Tous' }, { value: 'loyer', label: 'Loyers' }, { value: 'caution', label: 'Cautions' }, { value: 'restitution', label: 'Restitutions' }]} />
-          <DatePickerInput type="range" placeholder="Toutes les dates" value={periode} clearable
+          <DatePickerInput type="range" label="Date d'enregistrement" placeholder="Toutes les dates" value={periode} clearable
             onChange={(v) => { setPeriode(v as [string | null, string | null]); setPage(0); }} valueFormat="DD/MM/YYYY" w={260} />
+          <MonthPickerInput type="range" label="Mois payés" placeholder="Tous les mois" value={moisPayes} clearable allowSingleDateInRange
+            onChange={(v) => { setMoisPayes(v as [string | null, string | null]); setPage(0); }} valueFormat="MMMM YYYY" w={260} />
         </Group>
       </Stack>
 
