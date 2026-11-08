@@ -36,8 +36,22 @@ export interface NouveauBail {
   date_debut: string;
   jour_echeance: number;
   loyer: number;
+  entretien: number;
   premier_mois_montant: number | null;
   caution_montant: number;
+}
+
+/** Entretien mensuel habituel de l'espace : celui du dernier bail créé (0 s'il n'y en a pas). */
+export function useEntretienHabituel() {
+  const espace = useEspaceCourant();
+  return useQuery({
+    queryKey: ['entretien-habituel', espace.id],
+    queryFn: async (): Promise<number> => {
+      const { data } = await supabase.from('baux').select('entretien').eq('espace_id', espace.id)
+        .order('cree_le', { ascending: false }).limit(1).maybeSingle();
+      return data?.entretien ?? 0;
+    },
+  });
 }
 
 export function useCreerBail() {

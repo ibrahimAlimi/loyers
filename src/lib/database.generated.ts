@@ -85,6 +85,7 @@ export type Database = {
           cree_par: string | null
           date_debut: string
           date_fin: string | null
+          entretien: number
           espace_id: string
           id: string
           jour_echeance: number
@@ -105,6 +106,7 @@ export type Database = {
           cree_par?: string | null
           date_debut: string
           date_fin?: string | null
+          entretien?: number
           espace_id: string
           id?: string
           jour_echeance?: number
@@ -125,6 +127,7 @@ export type Database = {
           cree_par?: string | null
           date_debut?: string
           date_fin?: string | null
+          entretien?: number
           espace_id?: string
           id?: string
           jour_echeance?: number
@@ -1500,6 +1503,7 @@ export type Database = {
           bail_id: string | null
           date_debut: string | null
           date_fin: string | null
+          entretien: number | null
           dernier_mois_solde: string | null
           espace_id: string | null
           locataire_id: string | null
@@ -1554,6 +1558,10 @@ export type Database = {
         Returns: Json
       }
       appareil_de: { Args: { p_ua: string }; Returns: string }
+      appliquer_entretien_caution: {
+        Args: { p_caution_eau?: number; p_entretien?: number; p_mois_caution?: number; p_prefixe: string; p_simulation?: boolean }
+        Returns: Json
+      }
       auditer: {
         Args: {
           p_action: string
